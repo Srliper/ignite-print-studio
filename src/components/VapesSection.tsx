@@ -9,6 +9,7 @@ type Vape = {
   name: string;
   image: string;
   price: string;
+  puffs: string;
   flavors: string[];
 };
 
@@ -18,21 +19,24 @@ const VAPES: Vape[] = [
     name: "Ignite V155",
     image: v150,
     price: "R$ 100,00",
-    flavors: ["Banana Ice", "Uva Ice", "Melancia Ice", "Menta"],
+    puffs: "15.5k puffs",
+    flavors: ["Banana Ice", "Watermelon Ice", "Blueberry Ice", "Miami Mint"],
   },
   {
     id: "v250",
     name: "Ignite V250",
     image: v250,
     price: "R$ 150,00",
-    flavors: ["Strawberry Banana", "Uva Ice", "Pineapple", "Miami Mint"],
+    puffs: "25k puffs",
+    flavors: ["Grape Ice", "Strawberry Kiwi", "Pineapple Ice", "Peach Mango"],
   },
   {
     id: "v300",
     name: "Ignite V300",
     image: v300,
     price: "R$ 180,00",
-    flavors: ["Premium Blend", "Cherry", "Watermelon Ice", "Tropical"],
+    puffs: "30k puffs",
+    flavors: ["Cherry Ice", "Tropical Mix", "Mint Power", "Watermelon Bubble"],
   },
 ];
 
@@ -42,7 +46,7 @@ export function VapesSection() {
   const order = (v: Vape) => {
     const flavor = picked[v.id] ?? v.flavors[0];
     openWhatsApp(
-      `Olá! Quero pedir: ${v.name} - sabor ${flavor} - ${v.price}`,
+      `Olá! Quero pedir um pod ${v.name}\n• Capacidade: ${v.puffs}\n• Sabor: ${flavor}\n• Valor: ${v.price}`,
     );
   };
 
@@ -56,6 +60,10 @@ export function VapesSection() {
           <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tighter">
             IGNITE PODS
           </h2>
+          <p className="text-muted-foreground mt-3 max-w-xl">
+            Escolha o modelo, confira a média de puffs e selecione o sabor antes de
+            enviar o pedido no WhatsApp.
+          </p>
         </div>
         <div className="text-muted-foreground text-sm font-mono">V155 • V250 • V300</div>
       </div>
@@ -76,9 +84,14 @@ export function VapesSection() {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
-            <h3 className="text-xl font-bold mb-2">{v.name}</h3>
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <h3 className="text-xl font-bold">{v.name}</h3>
+              <span className="text-[10px] uppercase font-bold px-2 py-1 rounded-full bg-white/5 text-brand">
+                {v.puffs}
+              </span>
+            </div>
             <p className="text-muted-foreground text-sm mb-4">
-              Sabores: {v.flavors.join(", ")}.
+              Sabores disponíveis: {v.flavors.join(", ")}.
             </p>
 
             <div className="grid grid-cols-2 gap-2 mb-4">

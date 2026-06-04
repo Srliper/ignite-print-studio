@@ -5,10 +5,34 @@ import p4 from "@/assets/perfume-4.jpg";
 import { openWhatsApp } from "@/lib/whatsapp";
 
 const PERFUMES = [
-  { name: "Signature Gold", ref: "Inspirado em 1 Million", price: "R$ 89,90", image: p1 },
-  { name: "Ocean Deep", ref: "Inspirado em Invictus", price: "R$ 89,90", image: p2 },
-  { name: "Dark Night", ref: "Inspirado em Sauvage", price: "R$ 95,00", image: p3 },
-  { name: "L'Elegance", ref: "Inspirado em La Vie Est Belle", price: "R$ 95,00", image: p4 },
+  {
+    name: "521 Vip Rosé",
+    ref: "Inspiração floral adocicada",
+    family: "Feminino • 100ml",
+    price: "R$ 89,90",
+    image: p1,
+  },
+  {
+    name: "La Bella",
+    ref: "Inspiração elegante e delicada",
+    family: "Feminino • 100ml",
+    price: "R$ 89,90",
+    image: p2,
+  },
+  {
+    name: "Indomável Black",
+    ref: "Inspiração marcante e intensa",
+    family: "Masculino • 100ml",
+    price: "R$ 95,00",
+    image: p3,
+  },
+  {
+    name: "Fantastic",
+    ref: "Inspiração doce e vibrante",
+    family: "Feminino • 100ml",
+    price: "R$ 95,00",
+    image: p4,
+  },
 ];
 
 export function PerfumesSection() {
@@ -16,27 +40,29 @@ export function PerfumesSection() {
     <section id="perfumes" className="py-24 max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
         <span className="text-brand font-bold text-xs uppercase tracking-[0.3em]">
-          Bortoleto Collection
+          Linha Inspirada
         </span>
-        <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 italic tracking-tighter mt-2">
-          Contratipos Premium
+        <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 italic mt-2">
+          Perfumes estilo Bortoleto
         </h2>
-        <p className="text-muted-foreground max-w-xl mx-auto">
-          Fragrâncias inspiradas nas maiores marcas do mundo, com fixação de
-          até 12h.
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Seleção com fragrâncias femininas e masculinas no estilo das referências
+          que você enviou, pronta para pedir no delivery pelo WhatsApp.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {PERFUMES.map((p) => (
           <button
             key={p.name}
             onClick={() =>
-              openWhatsApp(`Olá! Quero o perfume ${p.name} (${p.ref}) — ${p.price}`)
+              openWhatsApp(
+                `Olá! Quero pedir o perfume ${p.name}\n• Estilo: ${p.ref}\n• Categoria: ${p.family}\n• Valor: ${p.price}`,
+              )
             }
-            className="group text-left"
+            className="group text-left bg-surface rounded-2xl border border-white/5 overflow-hidden hover:border-brand/50 transition-colors"
           >
-            <div className="w-full aspect-[4/5] bg-surface rounded-xl mb-4 overflow-hidden ring-1 ring-white/5 group-hover:ring-brand/50 transition-all">
+            <div className="w-full aspect-[4/5] overflow-hidden ring-1 ring-white/5">
               <img
                 src={p.image}
                 alt={p.name}
@@ -46,9 +72,15 @@ export function PerfumesSection() {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
-            <h4 className="font-bold">{p.name}</h4>
-            <p className="text-xs text-muted-foreground uppercase">{p.ref}</p>
-            <p className="text-brand mt-2 font-bold italic">{p.price}</p>
+            <div className="p-5">
+              <h4 className="font-bold text-lg">{p.name}</h4>
+              <p className="text-xs text-muted-foreground uppercase mt-1">{p.ref}</p>
+              <p className="text-sm text-muted-foreground mt-2">{p.family}</p>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-brand font-bold italic">{p.price}</span>
+                <span className="text-xs uppercase font-bold">Pedir</span>
+              </div>
+            </div>
           </button>
         ))}
       </div>
