@@ -5,9 +5,9 @@ import shirt3 from "@/assets/shirt-anime-3.jpg";
 import { openWhatsApp } from "@/lib/whatsapp";
 
 const PRESETS = [
-  { id: "p1", name: "Tokyo Nights", image: shirt1 },
-  { id: "p2", name: "Minimal Anime", image: shirt2 },
-  { id: "p3", name: "Street View", image: shirt3 },
+  { id: "p1", name: "Drop Demon Style", image: shirt1 },
+  { id: "p2", name: "Drop Attack Mono", image: shirt2 },
+  { id: "p3", name: "Drop Akatsuki Street", image: shirt3 },
 ];
 
 const SIZES = ["P", "M", "G", "GG"];
@@ -31,10 +31,11 @@ export function ShirtsSection() {
 
   const order = () => {
     const art = uploadName
-      ? `Imagem enviada (${uploadName})`
-      : `Estampa ${PRESETS.find((p) => p.id === preset)?.name ?? "—"}`;
+      ? `Arte enviada pelo cliente (${uploadName})`
+      : `Modelo escolhido: ${PRESETS.find((p) => p.id === preset)?.name ?? "—"}`;
+
     openWhatsApp(
-      `Olá! Quero personalizar uma camiseta:\n• Tamanho: ${size}\n• Cor: ${color}\n• ${art}`,
+      `Olá! Quero personalizar uma camiseta\n• Tamanho: ${size}\n• Cor base: ${color}\n• ${art}`,
     );
   };
 
@@ -43,18 +44,18 @@ export function ShirtsSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
-            <h2 className="text-5xl md:text-6xl font-display font-bold leading-tight mb-8 tracking-tighter">
-              ESTAMPE SUA{" "}
-              <span className="bg-primary-foreground text-brand px-3">PRÓPRIA</span>{" "}
-              HISTÓRIA
+            <h2 className="text-5xl md:text-6xl font-display font-bold leading-tight mb-8">
+              CAMISETAS DE ANIME E
+              <span className="bg-primary-foreground text-brand px-3 ml-3 inline-block">
+                ESTAMPA PRÓPRIA
+              </span>
             </h2>
             <p className="text-lg md:text-xl mb-10 font-medium opacity-80 max-w-lg">
-              Escolha entre nossos designs de anime ou envie sua própria arte para
-              personalização total.
+              Escolha uma arte no estilo das referências enviadas ou mande sua própria
+              imagem para produzir a camiseta personalizada.
             </p>
 
             <div className="space-y-5">
-              {/* Size */}
               <div>
                 <label className="font-bold uppercase tracking-tight text-xs mb-2 block">
                   01 — Tamanho
@@ -76,10 +77,9 @@ export function ShirtsSection() {
                 </div>
               </div>
 
-              {/* Color */}
               <div>
                 <label className="font-bold uppercase tracking-tight text-xs mb-2 block">
-                  02 — Cor
+                  02 — Cor da camiseta
                 </label>
                 <div className="flex gap-2 flex-wrap">
                   {COLORS.map((c) => (
@@ -98,10 +98,9 @@ export function ShirtsSection() {
                 </div>
               </div>
 
-              {/* Upload */}
               <div>
                 <label className="font-bold uppercase tracking-tight text-xs mb-2 block">
-                  03 — Sua arte (opcional)
+                  03 — Enviar sua imagem
                 </label>
                 <input
                   ref={fileRef}
@@ -115,10 +114,10 @@ export function ShirtsSection() {
                   className="w-full border-2 border-dashed border-primary-foreground/40 hover:border-primary-foreground rounded-xl p-5 text-left transition-colors bg-primary-foreground/5"
                 >
                   <div className="font-bold uppercase text-sm">
-                    {uploadName ?? "Enviar minha imagem"}
+                    {uploadName ?? "Clique para enviar sua arte"}
                   </div>
                   <div className="text-xs opacity-70 mt-1">
-                    PNG ou JPG até 10MB — estampamos exatamente como você enviar.
+                    PNG ou JPG até 10MB. Também fazemos baseado na imagem que você mandar.
                   </div>
                 </button>
               </div>
@@ -132,16 +131,11 @@ export function ShirtsSection() {
             </div>
           </div>
 
-          {/* Preview & presets */}
           <div className="space-y-4">
             <div className="aspect-[4/5] bg-primary-foreground/10 rounded-3xl overflow-hidden relative">
               <img
-                src={
-                  uploadPreview ??
-                  PRESETS.find((p) => p.id === preset)?.image ??
-                  shirt1
-                }
-                alt="Preview"
+                src={uploadPreview ?? PRESETS.find((p) => p.id === preset)?.image ?? shirt1}
+                alt="Preview da estampa"
                 loading="lazy"
                 className="w-full h-full object-cover"
               />
@@ -152,7 +146,7 @@ export function ShirtsSection() {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-widest mb-3 opacity-70">
-                Ou escolha um preset
+                Escolha uma estampa pronta
               </p>
               <div className="grid grid-cols-3 gap-3">
                 {PRESETS.map((p) => (
