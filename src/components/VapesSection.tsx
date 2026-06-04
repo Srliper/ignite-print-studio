@@ -119,10 +119,10 @@ export function VapesSection() {
             enviar o pedido no WhatsApp.
           </p>
         </div>
-        <div className="text-muted-foreground text-sm font-mono">V155 • V250 • V300</div>
+        <div className="text-muted-foreground text-sm font-mono">V155 • V250 • V300 • MIX • AIRMEZ • ETERNITY</div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {VAPES.map((v) => (
           <article
             key={v.id}
