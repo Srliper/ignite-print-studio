@@ -72,3 +72,16 @@
     font-family: var(--font-sans);
   }
 }
+
+@layer components {
+  .input {
+    width: 100%;
+    background: color-mix(in oklab, white 5%, transparent);
+    border: 2px solid color-mix(in oklab, white 10%, transparent);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input:focus { border-color: var(--color-brand); }
+}
