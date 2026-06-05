@@ -14,16 +14,270 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      avaliacoes: {
+        Row: {
+          cliente_id: string
+          comentario: string | null
+          created_at: string
+          id: string
+          nota: number
+          produto_id: string
+        }
+        Insert: {
+          cliente_id: string
+          comentario?: string | null
+          created_at?: string
+          id?: string
+          nota: number
+          produto_id: string
+        }
+        Update: {
+          cliente_id?: string
+          comentario?: string | null
+          created_at?: string
+          id?: string
+          nota?: number
+          produto_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pedidos: {
+        Row: {
+          cliente_id: string
+          codigo_rastreio: string | null
+          created_at: string
+          desconto: number
+          endereco_entrega: Json
+          frete: number
+          id: string
+          metodo_pagamento:
+            | Database["public"]["Enums"]["metodo_pagamento"]
+            | null
+          observacoes: string | null
+          pagamento_id: string | null
+          preference_id: string | null
+          produtos: Json
+          status: Database["public"]["Enums"]["status_pedido"]
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          cliente_id: string
+          codigo_rastreio?: string | null
+          created_at?: string
+          desconto?: number
+          endereco_entrega: Json
+          frete?: number
+          id?: string
+          metodo_pagamento?:
+            | Database["public"]["Enums"]["metodo_pagamento"]
+            | null
+          observacoes?: string | null
+          pagamento_id?: string | null
+          preference_id?: string | null
+          produtos: Json
+          status?: Database["public"]["Enums"]["status_pedido"]
+          subtotal: number
+          total: number
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string
+          codigo_rastreio?: string | null
+          created_at?: string
+          desconto?: number
+          endereco_entrega?: Json
+          frete?: number
+          id?: string
+          metodo_pagamento?:
+            | Database["public"]["Enums"]["metodo_pagamento"]
+            | null
+          observacoes?: string | null
+          pagamento_id?: string | null
+          preference_id?: string | null
+          produtos?: Json
+          status?: Database["public"]["Enums"]["status_pedido"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      produtos: {
+        Row: {
+          ativo: boolean
+          categoria: Database["public"]["Enums"]["categoria_produto"]
+          cores: string[] | null
+          created_at: string
+          descricao: string | null
+          destaque: boolean
+          estoque: number
+          id: string
+          imagem_url: string | null
+          imagens: string[] | null
+          nome: string
+          ordem: number
+          preco: number
+          preco_promocional: number | null
+          sabores: string[] | null
+          slug: string | null
+          tamanhos: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria: Database["public"]["Enums"]["categoria_produto"]
+          cores?: string[] | null
+          created_at?: string
+          descricao?: string | null
+          destaque?: boolean
+          estoque?: number
+          id?: string
+          imagem_url?: string | null
+          imagens?: string[] | null
+          nome: string
+          ordem?: number
+          preco: number
+          preco_promocional?: number | null
+          sabores?: string[] | null
+          slug?: string | null
+          tamanhos?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: Database["public"]["Enums"]["categoria_produto"]
+          cores?: string[] | null
+          created_at?: string
+          descricao?: string | null
+          destaque?: boolean
+          estoque?: number
+          id?: string
+          imagem_url?: string | null
+          imagens?: string[] | null
+          nome?: string
+          ordem?: number
+          preco?: number
+          preco_promocional?: number | null
+          sabores?: string[] | null
+          slug?: string | null
+          tamanhos?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          endereco: Json | null
+          id: string
+          nome: string
+          telefone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          endereco?: Json | null
+          id: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          endereco?: Json | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      uploads_estampa: {
+        Row: {
+          arquivo_path: string
+          arquivo_tipo: string | null
+          arquivo_url: string
+          cliente_id: string
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["status_upload"]
+          tamanho_mb: number | null
+        }
+        Insert: {
+          arquivo_path: string
+          arquivo_tipo?: string | null
+          arquivo_url: string
+          cliente_id: string
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["status_upload"]
+          tamanho_mb?: number | null
+        }
+        Update: {
+          arquivo_path?: string
+          arquivo_tipo?: string | null
+          arquivo_url?: string
+          cliente_id?: string
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["status_upload"]
+          tamanho_mb?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "cliente"
+      categoria_produto: "vapes" | "estamparia" | "perfumes"
+      metodo_pagamento: "pix" | "cartao" | "boleto"
+      status_pedido: "pendente" | "pago" | "enviado" | "entregue" | "cancelado"
+      status_upload: "pendente" | "aprovado" | "rejeitado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +404,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "cliente"],
+      categoria_produto: ["vapes", "estamparia", "perfumes"],
+      metodo_pagamento: ["pix", "cartao", "boleto"],
+      status_pedido: ["pendente", "pago", "enviado", "entregue", "cancelado"],
+      status_upload: ["pendente", "aprovado", "rejeitado"],
+    },
   },
 } as const
