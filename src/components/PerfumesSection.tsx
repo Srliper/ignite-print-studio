@@ -3,6 +3,8 @@ import p2 from "@/assets/perfume-2.jpg";
 import p3 from "@/assets/perfume-3.jpg";
 import p4 from "@/assets/perfume-4.jpg";
 import { openWhatsApp } from "@/lib/whatsapp";
+import { useCart, parsePrice } from "@/lib/cart-store";
+import { toast } from "sonner";
 
 const PERFUMES = [
   {
@@ -92,6 +94,7 @@ const PERFUMES = [
 ];
 
 export function PerfumesSection() {
+  const addToCart = useCart((s) => s.add);
   return (
     <section id="perfumes" className="py-24 max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
