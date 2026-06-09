@@ -3,6 +3,8 @@ import v150 from "@/assets/vape-v150.jpg";
 import v250 from "@/assets/vape-v250.jpg";
 import v300 from "@/assets/vape-v300.jpg";
 import { openWhatsApp } from "@/lib/whatsapp";
+import { useCart, parsePrice } from "@/lib/cart-store";
+import { toast } from "sonner";
 
 type Vape = {
   id: string;
@@ -96,8 +98,23 @@ const VAPES: Vape[] = [
 
 export function VapesSection() {
   const [picked, setPicked] = useState<Record<string, string>>({});
+  const addToCart = useCart((s) => s.add);
 
-  const order = (v: Vape) => {
+  const addCart = (v: Vape) => {
+    const flavor = picked[v.id] ?? v.flavors[0];
+    addToCart({
+      id: `${v.id}-${flavor}`,
+      productId: v.id,
+      category: "vape",
+      name: v.name,
+      price: parsePrice(v.price),
+      image: v.image,
+      options: { Sabor: flavor, Capacidade: v.puffs },
+    });
+    toast.success(`${v.name} adicionado ao carrinho`);
+  };
+
+  const orderWhats = (v: Vape) => {
     const flavor = picked[v.id] ?? v.flavors[0];
     openWhatsApp(
       `Olá! Quero pedir um pod ${v.name}\n• Capacidade: ${v.puffs}\n• Sabor: ${flavor}\n• Valor: ${v.price}`,
@@ -164,13 +181,21 @@ export function VapesSection() {
               ))}
             </div>
 
-            <div className="flex justify-between items-center mt-auto pt-4 border-t border-white/5">
-              <span className="text-brand font-bold text-lg">{v.price}</span>
+            <div className="mt-auto pt-4 border-t border-white/5 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-brand font-bold text-lg">{v.price}</span>
+                <button
+                  onClick={() => orderWhats(v)}
+                  className="text-xs font-semibold uppercase opacity-60 hover:opacity-100 transition-opacity"
+                >
+                  WhatsApp
+                </button>
+              </div>
               <button
-                onClick={() => order(v)}
-                className="px-4 py-2 bg-brand text-primary-foreground rounded-lg text-xs font-bold uppercase hover:scale-105 transition-transform"
+                onClick={() => addCart(v)}
+                className="w-full px-4 py-2.5 bg-brand text-primary-foreground rounded-lg text-xs font-bold uppercase hover:scale-[1.02] transition-transform"
               >
-                Pedir
+                Adicionar ao carrinho
               </button>
             </div>
           </article>
