@@ -112,14 +112,9 @@ export function PerfumesSection() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {PERFUMES.map((p) => (
-          <button
+          <div
             key={p.name}
-            onClick={() =>
-              openWhatsApp(
-                `Olá! Quero pedir o perfume ${p.name}\n• Estilo: ${p.ref}\n• Categoria: ${p.family}\n• Valor: ${p.price}`,
-              )
-            }
-            className="group text-left bg-surface rounded-2xl border border-white/5 overflow-hidden hover:border-brand/50 transition-colors"
+            className="group text-left bg-surface rounded-2xl border border-white/5 overflow-hidden hover:border-brand/50 transition-colors flex flex-col"
           >
             <div className="w-full aspect-[4/5] overflow-hidden ring-1 ring-white/5">
               <img
@@ -131,16 +126,42 @@ export function PerfumesSection() {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
-            <div className="p-5">
+            <div className="p-5 flex flex-col flex-1">
               <h4 className="font-bold text-lg">{p.name}</h4>
               <p className="text-xs text-muted-foreground uppercase mt-1">{p.ref}</p>
               <p className="text-sm text-muted-foreground mt-2">{p.family}</p>
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-brand font-bold italic">{p.price}</span>
-                <span className="text-xs uppercase font-bold">Pedir</span>
+                <button
+                  onClick={() =>
+                    openWhatsApp(
+                      `Olá! Quero pedir o perfume ${p.name}\n• Estilo: ${p.ref}\n• Categoria: ${p.family}\n• Valor: ${p.price}`,
+                    )
+                  }
+                  className="text-xs uppercase font-semibold opacity-60 hover:opacity-100 transition-opacity"
+                >
+                  WhatsApp
+                </button>
               </div>
+              <button
+                onClick={() => {
+                  addToCart({
+                    id: p.name,
+                    productId: p.name,
+                    category: "perfume",
+                    name: p.name,
+                    price: parsePrice(p.price),
+                    image: p.image,
+                    options: { Estilo: p.ref, Categoria: p.family },
+                  });
+                  toast.success(`${p.name} adicionado ao carrinho`);
+                }}
+                className="mt-4 w-full bg-brand text-primary-foreground py-2.5 rounded-lg text-xs font-bold uppercase hover:scale-[1.02] transition-transform"
+              >
+                Adicionar ao carrinho
+              </button>
             </div>
-          </button>
+          </div>
         ))}
       </div>
     </section>
