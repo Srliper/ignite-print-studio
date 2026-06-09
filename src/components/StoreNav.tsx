@@ -43,12 +43,6 @@ export function StoreNav() {
             </Link>
           )}
           <CartButton />
-              to="/auth"
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-tight transition-colors"
-            >
-              <User className="size-4" /> Entrar
-            </Link>
-          )}
           <div className="hidden sm:flex bg-brand text-primary-foreground px-4 py-2 rounded-full text-xs font-bold uppercase tracking-tighter items-center gap-2">
             <span className="size-1.5 bg-primary-foreground rounded-full animate-pulse" />
             Delivery On
