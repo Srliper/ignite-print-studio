@@ -142,12 +142,20 @@ export function ShirtsSection() {
                 </button>
               </div>
 
-              <button
-                onClick={order}
-                className="mt-4 bg-primary-foreground text-brand px-10 py-5 font-bold uppercase text-sm rounded-full hover:scale-105 transition-transform"
-              >
-                Finalizar Pedido no WhatsApp
-              </button>
+              <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={addCart}
+                  className="flex-1 bg-primary-foreground text-brand px-8 py-4 font-bold uppercase text-sm rounded-full hover:scale-105 transition-transform"
+                >
+                  Adicionar — R$ {SHIRT_PRICE.toFixed(2).replace(".", ",")}
+                </button>
+                <button
+                  onClick={orderWhats}
+                  className="px-6 py-4 font-bold uppercase text-sm rounded-full border-2 border-primary-foreground/40 hover:border-primary-foreground transition-colors"
+                >
+                  WhatsApp
+                </button>
+              </div>
             </div>
           </div>
 
