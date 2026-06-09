@@ -3,6 +3,10 @@ import shirt1 from "@/assets/shirt-anime-1.jpg";
 import shirt2 from "@/assets/shirt-anime-2.jpg";
 import shirt3 from "@/assets/shirt-anime-3.jpg";
 import { openWhatsApp } from "@/lib/whatsapp";
+import { useCart } from "@/lib/cart-store";
+import { toast } from "sonner";
+
+const SHIRT_PRICE = 79.9;
 
 const PRESETS = [
   { id: "p1", name: "Drop Demon Style", image: shirt1 },
@@ -20,6 +24,7 @@ export function ShirtsSection() {
   const [uploadName, setUploadName] = useState<string | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const addToCart = useCart((s) => s.add);
 
   const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -29,13 +34,28 @@ export function ShirtsSection() {
     setUploadPreview(URL.createObjectURL(f));
   };
 
-  const order = () => {
-    const art = uploadName
-      ? `Arte enviada pelo cliente (${uploadName})`
-      : `Modelo escolhido: ${PRESETS.find((p) => p.id === preset)?.name ?? "—"}`;
+  const selectedPreset = PRESETS.find((p) => p.id === preset);
+  const artLabel = uploadName
+    ? `Arte personalizada (${uploadName})`
+    : selectedPreset?.name ?? "—";
+  const previewImage = uploadPreview ?? selectedPreset?.image ?? shirt1;
 
+  const addCart = () => {
+    addToCart({
+      id: `shirt-${size}-${color}-${uploadName ?? preset}`,
+      productId: "shirt",
+      category: "shirt",
+      name: `Camiseta — ${artLabel}`,
+      price: SHIRT_PRICE,
+      image: previewImage,
+      options: { Tamanho: size, Cor: color, Estampa: artLabel },
+    });
+    toast.success("Camiseta adicionada ao carrinho");
+  };
+
+  const orderWhats = () => {
     openWhatsApp(
-      `Olá! Quero personalizar uma camiseta\n• Tamanho: ${size}\n• Cor base: ${color}\n• ${art}`,
+      `Olá! Quero personalizar uma camiseta\n• Tamanho: ${size}\n• Cor base: ${color}\n• ${artLabel}\n• Valor: R$ ${SHIRT_PRICE.toFixed(2).replace(".", ",")}`,
     );
   };
 
