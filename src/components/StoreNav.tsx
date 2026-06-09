@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "lucide-react";
+import { CartButton } from "./CartButton";
 
 export function StoreNav() {
   const [signedIn, setSignedIn] = useState(false);
@@ -31,10 +32,17 @@ export function StoreNav() {
               to="/minha-conta"
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-tight transition-colors"
             >
-              <User className="size-4" /> Minha conta
+              <User className="size-4" /> <span className="hidden sm:inline">Minha conta</span>
             </Link>
           ) : (
             <Link
+              to="/auth"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-tight transition-colors"
+            >
+              <User className="size-4" /> <span className="hidden sm:inline">Entrar</span>
+            </Link>
+          )}
+          <CartButton />
               to="/auth"
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-tight transition-colors"
             >
