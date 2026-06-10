@@ -91,6 +91,13 @@ const PERFUMES = [
     price: "R$ 99,00",
     image: p4,
   },
+  {
+    name: "Smoking Silver",
+    ref: "Insp. Fumée amadeirada intensa",
+    family: "Masculino • 100ml",
+    price: "R$ 99,00",
+    image: p3,
+  },
 ];
 
 export function PerfumesSection() {
