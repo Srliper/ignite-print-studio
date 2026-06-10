@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Fragment } from "react";
 import { useState } from "react";
 import { listarPedidosAdmin, atualizarPedido } from "@/lib/admin.functions";
 import { toast } from "sonner";
@@ -78,8 +79,8 @@ function PedidosAdmin() {
           </thead>
           <tbody>
             {pedidos.map((p: any) => (
-              <>
-                <tr key={p.id} className="border-t border-white/5 hover:bg-white/5">
+              <Fragment key={p.id}>
+                <tr className="border-t border-white/5 hover:bg-white/5">
                   <td className="p-4 font-mono text-xs">{p.id.slice(0, 8)}</td>
                   <td className="p-4">{new Date(p.created_at).toLocaleString("pt-BR")}</td>
                   <td className="p-4 font-bold">{brl(Number(p.total))}</td>
