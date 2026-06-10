@@ -1,16 +1,26 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "lucide-react";
+import { User, Shield } from "lucide-react";
 import { CartButton } from "./CartButton";
 
 export function StoreNav() {
   const [signedIn, setSignedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+    const check = async (userId: string | undefined) => {
+      if (!userId) return setIsAdmin(false);
+      const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+      setIsAdmin(!!data);
+    };
+    supabase.auth.getSession().then(({ data }) => {
+      setSignedIn(!!data.session);
+      check(data.session?.user.id);
+    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       setSignedIn(!!s);
+      check(s?.user.id);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -27,6 +37,14 @@ export function StoreNav() {
           <a href="/#perfumes" className="hover:text-brand transition-colors">Perfumes</a>
         </div>
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="hidden sm:flex items-center gap-2 bg-brand/10 hover:bg-brand/20 border border-brand/40 text-brand px-4 py-2 rounded-full text-xs font-bold uppercase tracking-tight transition-colors"
+            >
+              <Shield className="size-4" /> Admin
+            </Link>
+          )}
           {signedIn ? (
             <Link
               to="/minha-conta"
