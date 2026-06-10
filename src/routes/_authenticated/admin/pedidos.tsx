@@ -145,7 +145,7 @@ function PedidosAdmin() {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
             {pedidos.length === 0 && (
               <tr>
