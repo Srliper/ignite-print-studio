@@ -1,25 +1,65 @@
 import { useCart, formatBRL } from "@/lib/cart-store";
-import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus, Trash2, ShoppingBag, Loader2 } from "lucide-react";
 import { openWhatsApp } from "@/lib/whatsapp";
+import { useServerFn } from "@tanstack/react-start";
+import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { criarPedido } from "@/lib/pedidos.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function CartDrawer() {
   const { items, isOpen, close, setQty, remove, clear } = useCart();
   const total = items.reduce((acc, it) => acc + it.price * it.qty, 0);
+  const criar = useServerFn(criarPedido);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const checkoutWhats = () => {
-    const lines = items
-      .map((it) => {
-        const opts = it.options
-          ? Object.entries(it.options)
-              .map(([k, v]) => `  ${k}: ${v}`)
-              .join("\n")
-          : "";
-        return `• ${it.qty}x ${it.name} — ${formatBRL(it.price * it.qty)}${opts ? "\n" + opts : ""}`;
-      })
-      .join("\n");
-    openWhatsApp(
-      `Olá! Quero finalizar este pedido:\n\n${lines}\n\nTotal: ${formatBRL(total)}`,
-    );
+  const checkout = async () => {
+    if (items.length === 0) return;
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.info("Entre na sua conta para concluir o pedido.");
+        close();
+        navigate({ to: "/auth" });
+        return;
+      }
+
+      const payload = {
+        itens: items.map((it) => ({
+          id: it.id,
+          productId: it.productId,
+          category: it.category,
+          name: it.name,
+          price: it.price,
+          qty: it.qty,
+          image: it.image,
+          options: it.options,
+        })),
+      };
+      const pedido = await criar({ data: payload });
+
+      const lines = items
+        .map((it) => {
+          const opts = it.options
+            ? Object.entries(it.options).map(([k, v]) => `  ${k}: ${v}`).join("\n")
+            : "";
+          return `• ${it.qty}x ${it.name} — ${formatBRL(it.price * it.qty)}${opts ? "\n" + opts : ""}`;
+        })
+        .join("\n");
+      openWhatsApp(
+        `Olá! Pedido #${pedido.id.slice(0, 8)} registrado:\n\n${lines}\n\nTotal: ${formatBRL(total)}`,
+      );
+      toast.success("Pedido registrado! Continue no WhatsApp.");
+      clear();
+      close();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao registrar pedido");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -122,11 +162,16 @@ export function CartDrawer() {
               <span className="font-bold text-brand">{formatBRL(total)}</span>
             </div>
             <button
-              onClick={checkoutWhats}
-              className="w-full bg-brand text-primary-foreground rounded-full py-3.5 font-bold uppercase tracking-tight text-sm hover:scale-[1.02] transition-transform"
+              onClick={checkout}
+              disabled={loading}
+              className="w-full bg-brand text-primary-foreground rounded-full py-3.5 font-bold uppercase tracking-tight text-sm hover:scale-[1.02] transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              Finalizar no WhatsApp
+              {loading && <Loader2 className="size-4 animate-spin" />}
+              {loading ? "Registrando..." : "Finalizar pedido"}
             </button>
+            <p className="text-[10px] opacity-50 text-center">
+              Seu pedido é registrado na loja e o atendimento continua no WhatsApp.
+            </p>
             <button
               onClick={clear}
               className="w-full text-xs opacity-60 hover:opacity-100 transition-opacity"
