@@ -2,6 +2,7 @@ import { useState } from "react";
 import v150 from "@/assets/vape-v150.jpg";
 import v250 from "@/assets/vape-v250.jpg";
 import v300 from "@/assets/vape-v300.jpg";
+import smokingSilverCover from "@/assets/smoking-silver-cover.jpg";
 import { openWhatsApp } from "@/lib/whatsapp";
 import { useCart, parsePrice } from "@/lib/cart-store";
 import { toast } from "sonner";
@@ -123,21 +124,29 @@ export function VapesSection() {
 
   return (
     <section id="vapes" className="py-24 max-w-7xl mx-auto px-6">
-      <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
-        <div>
+      <div className="relative w-full rounded-3xl overflow-hidden mb-12 border border-white/10">
+        <img
+          src={smokingSilverCover}
+          alt="Smoking Silver — coleção de pods Ignite"
+          width={1536}
+          height={1024}
+          loading="lazy"
+          className="w-full h-[280px] md:h-[420px] object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10">
           <span className="text-brand font-bold text-xs uppercase tracking-[0.2em]">
             New Drop
           </span>
-          <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tighter">
+          <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tighter mt-1">
             IGNITE PODS
           </h2>
-          <p className="text-muted-foreground mt-3 max-w-xl">
-            Escolha o modelo, confira a média de puffs e selecione o sabor antes de
-            enviar o pedido no WhatsApp.
+          <p className="text-muted-foreground mt-2 max-w-xl text-sm md:text-base">
+            Escolha o modelo, confira a média de puffs e selecione o sabor.
           </p>
         </div>
-        <div className="text-muted-foreground text-sm font-mono">V155 • V250 • V300 • MIX • AIRMEZ • ETERNITY</div>
       </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {VAPES.map((v) => (
