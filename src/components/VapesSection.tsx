@@ -2,6 +2,7 @@ import { useState } from "react";
 import v150 from "@/assets/vape-v150.jpg";
 import v250 from "@/assets/vape-v250.jpg";
 import v300 from "@/assets/vape-v300.jpg";
+import smokingSilverCover from "@/assets/smoking-silver-cover.jpg";
 import { openWhatsApp } from "@/lib/whatsapp";
 import { useCart, parsePrice } from "@/lib/cart-store";
 import { toast } from "sonner";
