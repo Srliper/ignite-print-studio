@@ -1,102 +1,57 @@
-import p1 from "@/assets/perfume-1.jpg";
-import p2 from "@/assets/perfume-2.jpg";
-import p3 from "@/assets/perfume-3.jpg";
-import p4 from "@/assets/perfume-4.jpg";
+import fortune from "@/assets/perfume-fortune.jpg";
+import poloClub from "@/assets/perfume-polo-club.jpg";
+import racingCar from "@/assets/perfume-racing-car.jpg";
+import vipRose from "@/assets/perfume-521-rose.jpg";
+import vipBlack from "@/assets/perfume-521-black.jpg";
 import { openWhatsApp } from "@/lib/whatsapp";
 import { useCart, parsePrice } from "@/lib/cart-store";
 import { toast } from "sonner";
 
 const PERFUMES = [
   {
-    name: "521 Vip Rosé",
+    name: "Perfume Fortune Parfum Bortoletto 100ml",
+    ref: "Insp. One Million (Paco Rabanne)",
+    family: "Masculino • 100ml",
+    description:
+      "O perfume masculino mais fácil de vender, com aroma amadeirado e sedutor.",
+    price: "R$ 92,28",
+    image: fortune,
+  },
+  {
+    name: "Perfume Polo Club Parfum Bortoletto 100ml",
+    ref: "Insp. Polo Blue (Ralph Lauren)",
+    family: "Masculino • 100ml",
+    description:
+      "Opção fresca, aquática e elegante, perfeita para uso diário e climas quentes.",
+    price: "R$ 139,98",
+    image: poloClub,
+  },
+  {
+    name: "Perfume Racing Car 100ml Atlântica Natural - Bortoletto",
+    ref: "Insp. Ferrari Black",
+    family: "Masculino • 100ml",
+    description:
+      "Um dos aromas cítricos/amadeirados mais populares do Brasil, com venda rápida garantida.",
+    price: "R$ 205,42",
+    image: racingCar,
+  },
+  {
+    name: "Perfume Bortoletto 521 Vip Rose Feminino 100ml",
     ref: "Insp. 212 VIP Rosé",
     family: "Feminino • 100ml",
-    price: "R$ 89,90",
-    image: p1,
+    description:
+      "Fragrância floral amadeirada muito procurada para festas e eventos cotidianos.",
+    price: "R$ 180,00",
+    image: vipRose,
   },
   {
-    name: "La Bella",
-    ref: "Insp. La Vie Est Belle",
-    family: "Feminino • 100ml",
-    price: "R$ 89,90",
-    image: p2,
-  },
-  {
-    name: "Indomável Black",
-    ref: "Insp. Sauvage",
+    name: "Perfume 521 Vip Black 100ml Atlântica Natural - Bortoletto",
+    ref: "Insp. 212 VIP Black",
     family: "Masculino • 100ml",
-    price: "R$ 95,00",
-    image: p3,
-  },
-  {
-    name: "Fantastic",
-    ref: "Insp. Fantasy",
-    family: "Feminino • 100ml",
-    price: "R$ 89,90",
-    image: p4,
-  },
-  {
-    name: "Polo Club",
-    ref: "Insp. Polo Blue",
-    family: "Masculino • 100ml",
-    price: "R$ 95,00",
-    image: p3,
-  },
-  {
-    name: "Play Men",
-    ref: "Insp. Play Givenchy",
-    family: "Masculino • 100ml",
-    price: "R$ 95,00",
-    image: p2,
-  },
-  {
-    name: "Dark Bloom",
-    ref: "Insp. Black Orchid",
-    family: "Unissex • 100ml",
-    price: "R$ 99,00",
-    image: p1,
-  },
-  {
-    name: "Fortune",
-    ref: "Insp. Olympéa",
-    family: "Feminino • 100ml",
-    price: "R$ 89,90",
-    image: p4,
-  },
-  {
-    name: "521 Number Men",
-    ref: "Insp. 212 Men",
-    family: "Masculino • 100ml",
-    price: "R$ 95,00",
-    image: p3,
-  },
-  {
-    name: "Blackout Silver",
-    ref: "Insp. Bleu de Chanel",
-    family: "Masculino • 100ml",
-    price: "R$ 99,00",
-    image: p2,
-  },
-  {
-    name: "A'more",
-    ref: "Insp. J'adore",
-    family: "Feminino • 100ml",
-    price: "R$ 89,90",
-    image: p1,
-  },
-  {
-    name: "Rouge",
-    ref: "Insp. Rouge 540",
-    family: "Feminino • 100ml",
-    price: "R$ 99,00",
-    image: p4,
-  },
-  {
-    name: "Smoking Silver",
-    ref: "Insp. Fumée amadeirada intensa",
-    family: "Masculino • 100ml",
-    price: "R$ 99,00",
-    image: p3,
+    description:
+      "Aroma moderno e marcante muito desejado pelo público jovem para a noite.",
+    price: "R$ 187,92",
+    image: vipBlack,
   },
 ];
 
