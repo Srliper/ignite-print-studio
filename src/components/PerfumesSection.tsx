@@ -89,9 +89,10 @@ export function PerfumesSection() {
               />
             </div>
             <div className="p-5 flex flex-col flex-1">
-              <h4 className="font-bold text-lg">{p.name}</h4>
+              <h4 className="font-bold text-lg leading-snug">{p.name}</h4>
               <p className="text-xs text-muted-foreground uppercase mt-1">{p.ref}</p>
               <p className="text-sm text-muted-foreground mt-2">{p.family}</p>
+              <p className="text-sm text-muted-foreground/80 mt-2">{p.description}</p>
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-brand font-bold italic">{p.price}</span>
                 <button
