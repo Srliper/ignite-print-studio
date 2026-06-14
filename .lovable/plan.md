@@ -1,71 +1,70 @@
-Vou usar a stack que **já está rodando** (TanStack Start + Lovable Cloud / Supabase). Next.js não roda na Lovable, e o front atual (Hero, Vapes, Camisetas, Perfumes) já está bonito e funcional — vou construir o backend e o fluxo de compra **por cima** disso, sem jogar trabalho fora.
+## Objetivo
+Substituir o checkout via WhatsApp por um fluxo completo no site: cliente preenche endereço, calcula frete pelo Melhor Envio, paga com Mercado Pago (Pix/cartão/boleto), e o pedido fica registrado no banco. WhatsApp passa a ser apenas suporte.
 
-## O que vai ser entregue
+## Pré-requisitos (você precisa fornecer)
+1. **Token Melhor Envio** (Sandbox + Produção) — em https://melhorenvio.com.br → Configurações → Tokens
+2. **Mercado Pago Access Token** — em https://www.mercadopago.com.br/developers → Suas integrações → Credenciais
+3. **CEP de origem** (de onde os pedidos são enviados)
 
-### 1. Lovable Cloud + Schema do banco
-- Ativar Lovable Cloud (Supabase gerenciado).
-- Criar tabelas via migration, adaptadas para **Supabase Auth nativo**:
-  - `profiles` (FK → `auth.users`, com nome, telefone, endereço jsonb) — substitui `clientes` + `senha_hash`.
-  - `produtos` (categoria: vapes/estamparia/perfumes, preços, estoque, sabores, tamanhos, cores, imagens, destaque, ativo).
-  - `pedidos` (cliente_id, produtos jsonb, totais, status, pagamento_id, método, endereço, rastreio).
-  - `uploads_estampa` (cliente_id, arquivo_url, status).
-  - `avaliacoes` (produto_id, cliente_id, nota, comentário).
-  - `user_roles` + enum `app_role` (`admin`, `cliente`) + função `has_role()` security definer — para o painel admin.
-- **GRANTs corretos** + **RLS** em todas as tabelas:
-  - Produtos ativos: leitura pública (anon).
-  - Profiles/pedidos/uploads/avaliações: usuário só vê o que é dele.
-  - Admin: acesso total via `has_role(auth.uid(), 'admin')`.
-- Bucket de Storage `produtos` (público) e `estampas` (privado, leitura via assinatura).
-- Trigger `on_auth_user_created` que cria automaticamente um `profile` ao cadastrar.
+Vou pedir esses secrets depois que o plano for aprovado.
 
-### 2. Autenticação
-- Página `/auth` com login e cadastro (email/senha + Google opcional).
-- Layout `_authenticated/` gerenciado pela integração Supabase.
-- Páginas protegidas: `/minha-conta`, `/meus-pedidos`, `/checkout`.
-- Sign-out no menu da nav.
+## Fluxo do usuário
 
-### 3. Catálogo (reusa o front atual)
-- Os componentes `VapesSection`, `ShirtsSection`, `PerfumesSection` passam a **buscar do banco** via `createServerFn`, mantendo o visual atual.
-- Seed inicial com os produtos que já estão hardcoded hoje (Ignite V155/V250/V300, perfumes Bortoletto 521 VIP/La Bella/Indomável/Fantastic, estampas anime).
+```text
+Carrinho → [Finalizar]
+   ↓
+Endereço (CEP, rua, número, bairro, cidade, UF)
+   ↓
+Cálculo de frete (lista PAC/Sedex/Jadlog com preço e prazo)
+   ↓
+Resumo (itens + frete + total) → [Pagar]
+   ↓
+Checkout Pro Mercado Pago (Pix, cartão, boleto)
+   ↓
+Webhook MP confirma → pedido status "pago"
+   ↓
+Página "Pedido confirmado" + admin vê em /admin/pedidos
+```
 
-### 4. Carrinho + Checkout
-- Estado global do carrinho com **Zustand** + persistência em `localStorage`.
-- Ícone do carrinho na nav (badge com contador) + drawer lateral.
-- Página `/checkout`:
-  - Form de endereço (React Hook Form + Zod).
-  - Resumo do pedido, frete fixo configurável, total.
-  - Botão "Pagar com Mercado Pago".
+## Mudanças no banco (migration)
+Adicionar à tabela `pedidos`:
+- `endereco_cep`, `endereco_rua`, `endereco_numero`, `endereco_complemento`, `endereco_bairro`, `endereco_cidade`, `endereco_uf`
+- `frete_servico` (ex: "PAC"), `frete_prazo` (dias), `frete_valor`
+- `mp_preference_id`, `mp_payment_id`, `pagamento_status` ("pendente"/"pago"/"falhou")
 
-### 5. Mercado Pago Checkout Pro
-- Secret `MERCADO_PAGO_ACCESS_TOKEN` (peço via tool segura).
-- Server function `criarPreferenciaMP`: cria pedido `status=pendente` no banco + cria preferência na MP API + retorna `init_point`.
-- Redireciona o cliente para o Checkout Pro do MP (Pix / cartão / boleto).
-- Rota pública `/api/public/webhooks/mercadopago` (server route):
-  - Recebe notificação, busca o pagamento na API do MP, atualiza pedido para `pago`/`cancelado`.
-- Páginas de retorno: `/checkout/sucesso`, `/checkout/falha`, `/checkout/pendente`.
+Status do pedido passa a fluir: `aguardando_pagamento` → `pago` → `enviado` → `entregue`.
 
-### 6. Área do cliente
-- `/meus-pedidos`: lista os pedidos com status, total, código de rastreio.
-- `/minha-conta`: editar nome, telefone, endereço.
+## Arquivos a criar / editar
 
-### 7. Upload de estampa (camisetas)
-- Já existe o input no `ShirtsSection`. Vou ligá-lo ao bucket `estampas` quando o cliente estiver logado, salvando em `uploads_estampa`.
+**Server functions** (`src/lib/`)
+- `frete.functions.ts` — `calcularFrete({ cep, itens })` chama API Melhor Envio
+- `pagamento.functions.ts` — `criarPreferenciaMP({ pedidoId })` cria preference no MP
+- `pedidos.functions.ts` — atualizar para receber endereço/frete
+
+**Webhook público** (`src/routes/api/public/mp-webhook.ts`)
+- Recebe notificação do MP, valida, marca pedido como pago
+
+**UI**
+- `src/components/CheckoutDrawer.tsx` (novo) — substitui finalização do CartDrawer; 3 steps: endereço → frete → pagamento
+- `src/routes/pedido-confirmado.tsx` (novo) — página de sucesso
+- `src/components/CartDrawer.tsx` — trocar botão WhatsApp por "Finalizar compra" que abre CheckoutDrawer
+- `src/routes/_authenticated/admin/pedidos.tsx` — exibir endereço + frete + status pagamento
+
+**WhatsApp**
+- Mantém botão flutuante só para dúvidas (sem envio de pedido)
 
 ## Detalhes técnicos
 
-- **Stack final**: TanStack Start v1 + React 19 + Tailwind v4 + Supabase (Lovable Cloud) + Mercado Pago SDK via fetch (não tem SDK oficial node-compatible com Workers, então uso `fetch` direto na API REST do MP).
-- **Validação**: Zod nos `inputValidator` de cada `createServerFn` e nos forms (React Hook Form + zodResolver).
-- **Estado**: Zustand para carrinho; TanStack Query para dados do servidor (já configurado).
-- **Animações**: Framer Motion (instalar `motion`).
-- **Roles**: tabela `user_roles` separada (regra de segurança crítica).
-- **Webhook MP**: valida via `x-signature` header do MP antes de processar.
+**Melhor Envio**: POST `/api/v2/me/shipment/calculate` com `from.postal_code`, `to.postal_code`, e produtos (peso/dimensões). Como produtos atuais não têm peso, vou adicionar campos `peso`, `altura`, `largura`, `comprimento` em `produtos` com defaults sensatos (perfume: 0.3kg / 15×8×8cm; vape: 0.2kg / 12×5×5cm; camisa: 0.3kg / 30×20×3cm).
 
-## Sugestão de fasear
+**Mercado Pago**: SDK oficial `mercadopago` no servidor. Criar Preference com `back_urls` (sucesso/falha) e `notification_url` apontando para o webhook público. Verificar assinatura no webhook (header `x-signature`).
 
-Como é muita coisa, sugiro entregar em **3 etapas** para você validar entre uma e outra:
+**Segurança**: validação Zod em todas entradas; webhook valida assinatura MP; pedido só vira "pago" via webhook (nunca pelo redirect do navegador).
 
-1. **Fase 1 (esta resposta se aprovar)** — Lovable Cloud + schema + RLS + seed + auth (login/cadastro) + ligar catálogo ao banco.
-2. **Fase 2** — Carrinho (Zustand) + checkout + integração Mercado Pago + webhook + páginas de retorno.
-3. **Fase 3** — Área do cliente (pedidos/conta) + upload de estampa no Storage + avaliações + painel admin básico.
+## Fora do escopo (pra depois se quiser)
+- Cupom de desconto
+- Múltiplos endereços salvos por cliente
+- Rastreio automático via Melhor Envio (etiqueta)
+- Parcelamento customizado
 
-Aprovando, começo já pela Fase 1.
+Confirma que posso seguir? Depois te peço os 3 dados (token Melhor Envio, access token MP, CEP de origem).
