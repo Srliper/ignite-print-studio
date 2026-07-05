@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { adminStats } from "@/lib/admin.functions";
-import { DollarSign, ShoppingBag, Users, Package, Clock } from "lucide-react";
+import { DollarSign, ShoppingBag, Users, Package, Clock, Percent } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
@@ -28,8 +28,9 @@ function AdminDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Stat icon={DollarSign} label="Faturamento" value={brl(data.faturamento)} />
+        <Stat icon={Percent} label="Minha comissão (10%)" value={brl(data.comissao ?? 0)} accent />
         <Stat icon={ShoppingBag} label="Vendas hoje" value={String(data.vendasHoje)} />
-        <Stat icon={Clock} label="Pedidos pendentes" value={String(data.totalPendentes)} accent />
+        <Stat icon={Clock} label="Pedidos pendentes" value={String(data.totalPendentes)} />
         <Stat icon={Users} label="Clientes" value={String(data.totalClientes)} />
         <Stat icon={Package} label="Produtos" value={String(data.totalProdutos)} />
         <Stat icon={ShoppingBag} label="Total de pedidos" value={String(data.totalPedidos)} />

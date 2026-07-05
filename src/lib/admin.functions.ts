@@ -84,10 +84,49 @@ export const adminStats = createServerFn({ method: "GET" })
       totalPedidos: pedidos.length,
       totalPendentes: pedidos.filter((p: any) => p.status === "pendente").length,
       faturamento,
+      comissao: faturamento * 0.1,
       vendasHoje,
       totalClientes: clientesRes.count ?? 0,
       totalProdutos: produtosRes.count ?? 0,
       ultimos7: dias,
+    };
+  });
+
+export const comissaoPorProduto = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { data: pedidos, error } = await supabase
+      .from("pedidos")
+      .select("produtos,status,total,created_at")
+      .in("status", ["pago", "enviado", "entregue"]);
+    if (error) throw new Error(error.message);
+
+    const agg = new Map<string, { nome: string; qtd: number; receita: number; comissao: number }>();
+    let receitaTotal = 0;
+    for (const p of pedidos ?? []) {
+      const itens = Array.isArray(p.produtos) ? p.produtos : [];
+      for (const it of itens as any[]) {
+        const key = String(it.productId ?? it.id ?? it.name ?? "?");
+        const nome = String(it.name ?? key);
+        const qty = Number(it.qty ?? 1);
+        const price = Number(it.price ?? 0);
+        const rec = qty * price;
+        receitaTotal += rec;
+        const cur = agg.get(key) ?? { nome, qtd: 0, receita: 0, comissao: 0 };
+        cur.qtd += qty;
+        cur.receita += rec;
+        cur.comissao += rec * 0.1;
+        agg.set(key, cur);
+      }
+    }
+    const linhas = Array.from(agg.values()).sort((a, b) => b.receita - a.receita);
+    return {
+      linhas,
+      receitaTotal,
+      comissaoTotal: receitaTotal * 0.1,
+      pedidosPagos: (pedidos ?? []).length,
     };
   });
 

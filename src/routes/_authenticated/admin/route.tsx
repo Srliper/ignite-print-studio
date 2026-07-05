@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { checkIsAdmin, bootstrapAdmin } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, LogOut, Store } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, LogOut, Store, Percent } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — Emerson Store" }] }),
@@ -67,6 +67,7 @@ function AdminLayout() {
   const links = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
     { to: "/admin/pedidos", icon: ShoppingBag, label: "Pedidos" },
+    { to: "/admin/comissao", icon: Percent, label: "Comissão" },
     { to: "/admin/produtos", icon: Package, label: "Produtos" },
     { to: "/admin/clientes", icon: Users, label: "Clientes" },
     { to: "/admin/equipe", icon: UserCog, label: "Equipe" },
