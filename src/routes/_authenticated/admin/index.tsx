@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { adminStats } from "@/lib/admin.functions";
-import { DollarSign, ShoppingBag, Users, Package, Clock } from "lucide-react";
+import { DollarSign, ShoppingBag, Users, Package, Clock, Percent } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
