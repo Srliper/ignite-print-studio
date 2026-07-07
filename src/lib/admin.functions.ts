@@ -225,6 +225,34 @@ export const removerProduto = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const uploadImagemProduto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { fileName: string; contentType: string; base64: string }) =>
+    z
+      .object({
+        fileName: z.string().min(1).max(200),
+        contentType: z.string().min(1).max(100),
+        base64: z.string().min(1),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const cleanName = data.fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${userId}/${Date.now()}-${cleanName}`;
+    const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
+    const { error } = await supabase.storage
+      .from("produtos")
+      .upload(path, bytes, { contentType: data.contentType, upsert: false });
+    if (error) throw new Error(error.message);
+    const { data: signed, error: sErr } = await supabase.storage
+      .from("produtos")
+      .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+    if (sErr) throw new Error(sErr.message);
+    return { url: signed.signedUrl };
+  });
+
 export const listarClientesAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

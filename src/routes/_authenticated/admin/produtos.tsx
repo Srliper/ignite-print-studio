@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { listarProdutosAdmin, upsertProduto, removerProduto } from "@/lib/admin.functions";
+import { listarProdutosAdmin, upsertProduto, removerProduto, uploadImagemProduto } from "@/lib/admin.functions";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/produtos")({
   component: ProdutosAdmin,
@@ -43,8 +43,10 @@ function ProdutosAdmin() {
   const listar = useServerFn(listarProdutosAdmin);
   const upsert = useServerFn(upsertProduto);
   const remover = useServerFn(removerProduto);
+  const upload = useServerFn(uploadImagemProduto);
 
   const [form, setForm] = useState<ProdutoForm | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-produtos"],
@@ -250,14 +252,59 @@ function ProdutosAdmin() {
                   />
                 </FormField>
               </div>
-              <FormField label="URL da imagem">
-                <input
-                  type="url"
-                  value={form.imagem_url}
-                  onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
-                  placeholder="https://..."
-                  className="input"
-                />
+              <FormField label="Imagem do produto">
+                <div className="space-y-2">
+                  {form.imagem_url && (
+                    <img
+                      src={form.imagem_url}
+                      alt="prévia"
+                      className="w-24 h-24 object-cover rounded-lg border border-white/10"
+                    />
+                  )}
+                  <label className="flex items-center gap-2 border border-dashed border-white/20 rounded-lg px-3 py-2 cursor-pointer hover:bg-white/5 text-sm">
+                    <Upload className="size-4" />
+                    {uploading ? "Enviando..." : "Selecionar imagem do computador"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 5 * 1024 * 1024) {
+                          toast.error("Imagem maior que 5MB.");
+                          return;
+                        }
+                        setUploading(true);
+                        try {
+                          const buf = await file.arrayBuffer();
+                          let bin = "";
+                          const bytes = new Uint8Array(buf);
+                          for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+                          const base64 = btoa(bin);
+                          const res = await upload({
+                            data: { fileName: file.name, contentType: file.type || "image/jpeg", base64 },
+                          });
+                          setForm((prev) => (prev ? { ...prev, imagem_url: res.url } : prev));
+                          toast.success("Imagem enviada");
+                        } catch (err: any) {
+                          toast.error(err?.message ?? "Falha no upload");
+                        } finally {
+                          setUploading(false);
+                          e.target.value = "";
+                        }
+                      }}
+                    />
+                  </label>
+                  <input
+                    type="url"
+                    value={form.imagem_url}
+                    onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
+                    placeholder="ou cole uma URL https://..."
+                    className="input"
+                  />
+                </div>
               </FormField>
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 text-sm">
