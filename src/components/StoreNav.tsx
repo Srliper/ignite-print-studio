@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Shield } from "lucide-react";
 import { CartButton } from "./CartButton";
+import logo from "@/assets/logo.png";
 
 export function StoreNav() {
   const [signedIn, setSignedIn] = useState(false);
@@ -28,8 +29,8 @@ export function StoreNav() {
   return (
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-display font-bold tracking-tighter text-brand">
-          EMERSON STORE
+        <Link to="/" className="flex items-center" aria-label="Emerson Store">
+          <img src={logo} alt="Emerson Store" width={160} height={160} className="h-14 w-auto" />
         </Link>
         <div className="hidden md:flex gap-8 text-sm font-medium uppercase tracking-widest">
           <a href="/#vapes" className="hover:text-brand transition-colors">Vapes</a>
