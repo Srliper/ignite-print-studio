@@ -1,3 +1,7 @@
+import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
+
+export const OWNER_EMAIL = "emerstore385@gmail.com";
+
 export function StoreFooter() {
   return (
     <footer className="bg-surface border-t border-white/5 py-12">
@@ -11,10 +15,18 @@ export function StoreFooter() {
         <p className="text-muted-foreground text-sm mb-4">
           © 2026 Emerson Store — Estilo e Atitude
         </p>
-        <div className="flex justify-center gap-6 text-xs font-bold uppercase tracking-tighter">
-          <a href="#" className="hover:text-brand">Instagram</a>
-          <a href="#" className="hover:text-brand">WhatsApp</a>
-          <a href="#" className="hover:text-brand">TikTok</a>
+        <div className="flex flex-wrap justify-center gap-6 text-xs font-bold uppercase tracking-tighter">
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-brand"
+          >
+            WhatsApp (15) 98118-3740
+          </a>
+          <a href={`mailto:${OWNER_EMAIL}`} className="hover:text-brand normal-case tracking-normal">
+            {OWNER_EMAIL}
+          </a>
         </div>
       </div>
     </footer>
