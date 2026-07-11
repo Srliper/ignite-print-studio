@@ -24,13 +24,11 @@ export const AUTH_BASE_PATH = "/oauth";
 
 /**
  * Lê variáveis de ambiente com fallback entre nomes comuns.
- * Suporta GOOGLE_CLIENT_ID/SECRET (solicitado) e AUTH_GOOGLE_ID/SECRET (Auth.js).
  */
 function normalizeAuthUrl(url?: string): string | undefined {
   if (!url) return undefined;
   try {
     const parsed = new URL(url);
-    // Auth.js exige AUTH_URL com o path completo: .../oauth
     if (parsed.pathname === "/" || !parsed.pathname.endsWith(AUTH_BASE_PATH)) {
       parsed.pathname = AUTH_BASE_PATH;
     }
@@ -42,10 +40,9 @@ function normalizeAuthUrl(url?: string): string | undefined {
 }
 
 /**
- * Sincroniza variáveis NEXTAUTH_* (Vercel/Next.js) para AUTH_* (Auth.js).
- * Muitos projetos na Vercel usam NEXTAUTH_SECRET e NEXTAUTH_URL por hábito.
+ * Sincroniza variáveis NEXTAUTH_* (Vercel) e detecta URL de preview da Vercel.
  */
-function syncLegacyAuthEnv() {
+export function syncLegacyAuthEnv() {
   if (!process.env.AUTH_SECRET && process.env.NEXTAUTH_SECRET) {
     process.env.AUTH_SECRET = process.env.NEXTAUTH_SECRET;
   }
@@ -54,15 +51,20 @@ function syncLegacyAuthEnv() {
     process.env.AUTH_URL = process.env.NEXTAUTH_URL;
   }
 
+  // Preview deployments: VERCEL_URL = ignite-print-studio-xxx.vercel.app
+  if (!process.env.AUTH_URL && process.env.VERCEL_URL) {
+    process.env.AUTH_URL = `https://${process.env.VERCEL_URL}`;
+  }
+
   if (process.env.AUTH_URL) {
     const normalized = normalizeAuthUrl(process.env.AUTH_URL);
     if (normalized) process.env.AUTH_URL = normalized;
   }
 }
 
-syncLegacyAuthEnv();
-
 function getAuthEnv() {
+  syncLegacyAuthEnv();
+
   const googleClientId =
     process.env.GOOGLE_CLIENT_ID ??
     process.env.AUTH_GOOGLE_ID ??
@@ -76,92 +78,74 @@ function getAuthEnv() {
   const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
   const authUrl = normalizeAuthUrl(process.env.AUTH_URL ?? process.env.NEXTAUTH_URL);
 
-  if (!googleClientId || !googleClientSecret) {
-    console.warn(
-      "[auth] GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET não configurados. Login com Google indisponível.",
-    );
-  }
-
-  if (!authSecret) {
-    console.warn("[auth] AUTH_SECRET não configurado. Sessões não serão assinadas corretamente.");
-  }
-
   return { googleClientId, googleClientSecret, authSecret, authUrl };
 }
 
-const env = getAuthEnv();
-
 /**
- * Configuração central do Auth.js com Google Provider.
- * Variáveis lidas em runtime no servidor (compatível com Vercel).
+ * Configuração Auth.js lida em runtime (obrigatório na Vercel serverless).
+ * Não use objeto estático — env vars podem não estar disponíveis no import.
  */
-export const authConfig: StartAuthJSConfig = {
-  secret: env.authSecret,
-  trustHost: true,
-  providers: [
-    Google({
-      clientId: env.googleClientId ?? "",
-      clientSecret: env.googleClientSecret ?? "",
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
+export function getAuthConfig(): StartAuthJSConfig {
+  const env = getAuthEnv();
+
+  if (!env.googleClientId || !env.googleClientSecret) {
+    console.warn("[auth] GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET ausentes.");
+  }
+
+  if (!env.authSecret) {
+    console.warn("[auth] AUTH_SECRET / NEXTAUTH_SECRET ausente.");
+  }
+
+  return {
+    secret: env.authSecret,
+    trustHost: true,
+    providers: [
+      Google({
+        clientId: env.googleClientId ?? "",
+        clientSecret: env.googleClientSecret ?? "",
+        authorization: {
+          params: {
+            prompt: "consent",
+            access_type: "offline",
+            response_type: "code",
+          },
         },
+      }),
+    ],
+    pages: {
+      signIn: "/auth",
+      error: "/auth",
+    },
+    callbacks: {
+      async jwt({ token, account, profile }) {
+        if (account && profile) {
+          token.picture = profile.picture ?? token.picture;
+        }
+        return token;
       },
-    }),
-  ],
-  pages: {
-    signIn: "/auth",
-    error: "/auth",
-  },
-  callbacks: {
-    /** Enriquece o JWT com dados do perfil Google após login */
-    async jwt({ token, account, profile }) {
-      if (account && profile) {
-        token.picture = profile.picture ?? token.picture;
-      }
-      return token;
+      async session({ session, token }) {
+        if (token.sub) {
+          session.user = {
+            ...session.user,
+            id: token.sub,
+            image: (token.picture as string | undefined) ?? session.user.image,
+          };
+        }
+        return session;
+      },
     },
-    /** Expõe id e foto do usuário na sessão consumida pelo cliente */
-    async session({ session, token }) {
-      if (token.sub) {
-        session.user = {
-          ...session.user,
-          id: token.sub,
-          image: (token.picture as string | undefined) ?? session.user.image,
-        };
-      }
-      return session;
-    },
-  },
-};
+  };
+}
 
-/**
- * Handler de autenticação Auth.js — usado em src/routes/oauth/$.ts
- */
 export { StartAuthJS } from "start-authjs";
 
 /*
- * =============================================================================
- * README — CONFIGURAÇÃO DO GOOGLE OAUTH E DEPLOY NA VERCEL
- * =============================================================================
+ * VERCEL — adicione em Production E Preview:
+ *   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+ *   AUTH_SECRET ou NEXTAUTH_SECRET
+ *   AUTH_URL=https://ignite-print-studio.vercel.app  (opcional — auto-detecta preview)
+ *   SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, VITE_SUPABASE_*
  *
- * IMPORTANTE: Usamos /oauth/* em vez de /api/auth/* porque a Vercel reserva
- * o prefixo /api/ para funções serverless e retorna 404 nas rotas do Nitro.
- *
- * CONFIGURAÇÃO NO GOOGLE CLOUD CONSOLE:
- * - Origens JavaScript autorizadas:
- *     http://localhost:5173
- *     https://ignite-print-studio.vercel.app
- * - URIs de redirecionamento autorizados:
- *     http://localhost:5173/oauth/callback/google
- *     https://ignite-print-studio.vercel.app/oauth/callback/google
- *
- * CONFIGURAÇÃO NA VERCEL:
- *     GOOGLE_CLIENT_ID
- *     GOOGLE_CLIENT_SECRET
- *     AUTH_SECRET  ou  NEXTAUTH_SECRET
- *     AUTH_URL     ou  NEXTAUTH_URL  (= https://ignite-print-studio.vercel.app)
- * =============================================================================
+ * GOOGLE redirect URI:
+ *   https://ignite-print-studio.vercel.app/oauth/callback/google
  */

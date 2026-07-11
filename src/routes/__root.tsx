@@ -82,9 +82,14 @@ export const Route = createRootRouteWithContext<{
   session: AuthSession | null;
 }>()({
   beforeLoad: async () => {
-    // Carrega sessão Auth.js (Google OAuth) no contexto global do router
-    const session = await fetchAuthSession();
-    return { session };
+    // Carrega sessão Auth.js — falha silenciosa se env vars ausentes na Vercel
+    try {
+      const session = await fetchAuthSession();
+      return { session };
+    } catch (error) {
+      console.error("[__root] Erro ao carregar sessão:", error);
+      return { session: null };
+    }
   },
   head: () => ({
     meta: [

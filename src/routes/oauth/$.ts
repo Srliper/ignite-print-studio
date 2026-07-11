@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { StartAuthJS, authConfig } from "@/integrations/auth";
+import { StartAuthJS, getAuthConfig } from "@/integrations/auth";
 
 /**
  * Rota catch-all do Auth.js em /oauth/* (não /api/auth — Vercel reserva /api/*).
- * Atende: /oauth/csrf, /oauth/signin/google, /oauth/callback/google, etc.
  */
-const { GET, POST } = StartAuthJS(authConfig);
+const { GET, POST } = StartAuthJS(() => getAuthConfig());
 
 export const Route = createFileRoute("/oauth/$")({
   server: {
@@ -15,10 +14,12 @@ export const Route = createFileRoute("/oauth/$")({
           return await GET({ request, response: new Response() });
         } catch (error) {
           console.error("[oauth] Erro no handler GET:", error);
-          return new Response(JSON.stringify({ error: "Erro interno de autenticação." }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          });
+          return new Response(
+            JSON.stringify({
+              error: "Autenticação indisponível. Verifique AUTH_SECRET na Vercel.",
+            }),
+            { status: 503, headers: { "Content-Type": "application/json" } },
+          );
         }
       },
       POST: async ({ request }) => {
@@ -26,10 +27,12 @@ export const Route = createFileRoute("/oauth/$")({
           return await POST({ request, response: new Response() });
         } catch (error) {
           console.error("[oauth] Erro no handler POST:", error);
-          return new Response(JSON.stringify({ error: "Erro interno de autenticação." }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          });
+          return new Response(
+            JSON.stringify({
+              error: "Autenticação indisponível. Verifique AUTH_SECRET na Vercel.",
+            }),
+            { status: 503, headers: { "Content-Type": "application/json" } },
+          );
         }
       },
     },
