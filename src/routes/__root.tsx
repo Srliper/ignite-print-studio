@@ -7,10 +7,13 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import type { AuthSession } from "start-authjs";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { fetchAuthSession } from "@/lib/auth-session";
+import { AuthProvider } from "@/providers/AuthProvider";
 import { Toaster } from "sonner";
 import { CartDrawer } from "@/components/CartDrawer";
 
@@ -74,7 +77,15 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+  session: AuthSession | null;
+}>()({
+  beforeLoad: async () => {
+    // Carrega sessão Auth.js (Google OAuth) no contexto global do router
+    const session = await fetchAuthSession();
+    return { session };
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -118,9 +129,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <CartDrawer />
-      <Toaster richColors position="top-right" />
+      <AuthProvider>
+        <Outlet />
+        <CartDrawer />
+        <Toaster richColors position="top-right" />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

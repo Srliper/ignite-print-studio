@@ -1,14 +1,18 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import type { AuthUser } from "@/integrations/auth";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
-      throw redirect({ to: "/auth" });
+  beforeLoad: ({ context, location }) => {
+    // Middleware de autenticação: exige sessão Auth.js (Google OAuth)
+    if (!context.session?.user) {
+      throw redirect({
+        to: "/auth",
+        search: { callbackUrl: location.pathname },
+      });
     }
-    return { user: data.user };
+
+    return { user: context.session.user as AuthUser };
   },
   component: () => <Outlet />,
 });

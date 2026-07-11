@@ -1,30 +1,12 @@
-import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
 import { User, Shield } from "lucide-react";
 import { CartButton } from "./CartButton";
+import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/logo.png";
 
 export function StoreNav() {
-  const [signedIn, setSignedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const check = async (userId: string | undefined) => {
-      if (!userId) return setIsAdmin(false);
-      const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-      setIsAdmin(!!data);
-    };
-    supabase.auth.getSession().then(({ data }) => {
-      setSignedIn(!!data.session);
-      check(data.session?.user.id);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSignedIn(!!s);
-      check(s?.user.id);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user } = useAuth();
+  const signedIn = !!user;
 
   return (
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/10">
@@ -33,12 +15,18 @@ export function StoreNav() {
           <img src={logo} alt="Emerson Store" width={160} height={160} className="h-14 w-auto" />
         </Link>
         <div className="hidden md:flex gap-8 text-sm font-medium uppercase tracking-widest">
-          <a href="/#vapes" className="hover:text-brand transition-colors">Vapes</a>
-          <a href="/#shirts" className="hover:text-brand transition-colors">Estamparia</a>
-          <a href="/#perfumes" className="hover:text-brand transition-colors">Perfumes</a>
+          <a href="/#vapes" className="hover:text-brand transition-colors">
+            Vapes
+          </a>
+          <a href="/#shirts" className="hover:text-brand transition-colors">
+            Estamparia
+          </a>
+          <a href="/#perfumes" className="hover:text-brand transition-colors">
+            Perfumes
+          </a>
         </div>
         <div className="flex items-center gap-3">
-          {isAdmin && (
+          {signedIn && (
             <Link
               to="/admin"
               className="hidden sm:flex items-center gap-2 bg-brand/10 hover:bg-brand/20 border border-brand/40 text-brand px-4 py-2 rounded-full text-xs font-bold uppercase tracking-tight transition-colors"
@@ -51,7 +39,8 @@ export function StoreNav() {
               to="/minha-conta"
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-tight transition-colors"
             >
-              <User className="size-4" /> <span className="hidden sm:inline">Minha conta</span>
+              <User className="size-4" />{" "}
+              <span className="hidden sm:inline">{user?.name ?? "Minha conta"}</span>
             </Link>
           ) : (
             <Link

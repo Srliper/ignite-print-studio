@@ -1,6 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { StoreNav } from "@/components/StoreNav";
 
@@ -25,53 +26,74 @@ type Profile = {
 };
 
 function MinhaContaPage() {
-  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<Profile>({
-    nome: "",
-    email: null,
+    nome: user?.name ?? "",
+    email: user?.email ?? null,
     telefone: null,
     endereco: null,
   });
 
   useEffect(() => {
     (async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData.user?.id;
-      if (!userId) return;
+      // Perfil no Supabase (opcional) — usa dados do Google OAuth como fallback
+      if (!user?.email) {
+        setLoading(false);
+        return;
+      }
+
       const { data } = await supabase
         .from("profiles")
         .select("nome,email,telefone,endereco")
-        .eq("id", userId)
+        .eq("email", user.email)
         .maybeSingle();
-      if (data) setProfile(data as Profile);
+
+      if (data) {
+        setProfile(data as Profile);
+      } else {
+        setProfile((prev) => ({
+          ...prev,
+          nome: user.name ?? prev.nome,
+          email: user.email ?? prev.email,
+        }));
+      }
       setLoading(false);
     })();
-  }, []);
+  }, [user]);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-    if (!userId) return;
-    const { error } = await supabase
-      .from("profiles")
-      .update({
+
+    if (!user?.email) {
+      setSaving(false);
+      toast.error("Sessão inválida. Faça login novamente.");
+      return;
+    }
+
+    const { error } = await supabase.from("profiles").upsert(
+      {
+        email: user.email,
         nome: profile.nome,
         telefone: profile.telefone,
         endereco: profile.endereco,
-      })
-      .eq("id", userId);
+      },
+      { onConflict: "email" },
+    );
+
     setSaving(false);
     if (error) toast.error(error.message);
     else toast.success("Dados atualizados!");
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
+    try {
+      await signOut("/");
+    } catch {
+      toast.error("Erro ao sair da conta.");
+    }
   };
 
   const end = profile.endereco ?? {};
@@ -83,7 +105,14 @@ function MinhaContaPage() {
       <StoreNav />
       <main className="max-w-3xl mx-auto px-6 py-16">
         <div className="flex items-center justify-between mb-10">
-          <h1 className="text-4xl font-display font-bold">Minha Conta</h1>
+          <div>
+            <h1 className="text-4xl font-display font-bold">Minha Conta</h1>
+            {user && (
+              <p className="text-sm opacity-70 mt-2">
+                Olá, <span className="text-brand font-semibold">{user.name ?? user.email}</span>!
+              </p>
+            )}
+          </div>
           <Link to="/meus-pedidos" className="text-sm font-bold uppercase tracking-tight text-brand hover:underline">
             Meus pedidos →
           </Link>

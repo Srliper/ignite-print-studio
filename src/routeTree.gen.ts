@@ -14,8 +14,10 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedMinhaContaRouteImport } from './routes/_authenticated/minha-conta'
+import { Route as AuthenticatedMeusPedidosRouteImport } from './routes/_authenticated/meus-pedidos'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedAdminProdutosRouteImport } from './routes/_authenticated/admin/produtos'
 import { Route as AuthenticatedAdminPedidosRouteImport } from './routes/_authenticated/admin/pedidos'
 import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin/equipe'
@@ -46,6 +48,12 @@ const AuthenticatedMinhaContaRoute = AuthenticatedMinhaContaRouteImport.update({
   path: '/minha-conta',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMeusPedidosRoute =
+  AuthenticatedMeusPedidosRouteImport.update({
+    id: '/meus-pedidos',
+    path: '/meus-pedidos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -55,6 +63,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminProdutosRoute =
   AuthenticatedAdminProdutosRouteImport.update({
@@ -92,24 +105,28 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/pedido-confirmado': typeof PedidoConfirmadoRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
   '/minha-conta': typeof AuthenticatedMinhaContaRoute
   '/admin/clientes': typeof AuthenticatedAdminClientesRoute
   '/admin/comissao': typeof AuthenticatedAdminComissaoRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/pedido-confirmado': typeof PedidoConfirmadoRoute
+  '/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
   '/minha-conta': typeof AuthenticatedMinhaContaRoute
   '/admin/clientes': typeof AuthenticatedAdminClientesRoute
   '/admin/comissao': typeof AuthenticatedAdminComissaoRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -119,12 +136,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/pedido-confirmado': typeof PedidoConfirmadoRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
   '/_authenticated/minha-conta': typeof AuthenticatedMinhaContaRoute
   '/_authenticated/admin/clientes': typeof AuthenticatedAdminClientesRoute
   '/_authenticated/admin/comissao': typeof AuthenticatedAdminComissaoRoute
   '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/_authenticated/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/_authenticated/admin/produtos': typeof AuthenticatedAdminProdutosRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -134,24 +153,28 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pedido-confirmado'
     | '/admin'
+    | '/meus-pedidos'
     | '/minha-conta'
     | '/admin/clientes'
     | '/admin/comissao'
     | '/admin/equipe'
     | '/admin/pedidos'
     | '/admin/produtos'
+    | '/api/auth/$'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/pedido-confirmado'
+    | '/meus-pedidos'
     | '/minha-conta'
     | '/admin/clientes'
     | '/admin/comissao'
     | '/admin/equipe'
     | '/admin/pedidos'
     | '/admin/produtos'
+    | '/api/auth/$'
     | '/admin'
   id:
     | '__root__'
@@ -160,12 +183,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pedido-confirmado'
     | '/_authenticated/admin'
+    | '/_authenticated/meus-pedidos'
     | '/_authenticated/minha-conta'
     | '/_authenticated/admin/clientes'
     | '/_authenticated/admin/comissao'
     | '/_authenticated/admin/equipe'
     | '/_authenticated/admin/pedidos'
     | '/_authenticated/admin/produtos'
+    | '/api/auth/$'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -174,6 +199,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PedidoConfirmadoRoute: typeof PedidoConfirmadoRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -213,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMinhaContaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/meus-pedidos': {
+      id: '/_authenticated/meus-pedidos'
+      path: '/meus-pedidos'
+      fullPath: '/meus-pedidos'
+      preLoaderRoute: typeof AuthenticatedMeusPedidosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -226,6 +259,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/produtos': {
       id: '/_authenticated/admin/produtos'
@@ -291,11 +331,13 @@ const AuthenticatedAdminRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedMeusPedidosRoute: typeof AuthenticatedMeusPedidosRoute
   AuthenticatedMinhaContaRoute: typeof AuthenticatedMinhaContaRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedMeusPedidosRoute: AuthenticatedMeusPedidosRoute,
   AuthenticatedMinhaContaRoute: AuthenticatedMinhaContaRoute,
 }
 
@@ -307,7 +349,18 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PedidoConfirmadoRoute: PedidoConfirmadoRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

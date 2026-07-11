@@ -1,9 +1,8 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { checkIsAdmin, bootstrapAdmin } from "@/lib/admin.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { LayoutDashboard, ShoppingBag, Package, Users, UserCog, LogOut, Store, Percent } from "lucide-react";
 
@@ -13,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminLayout() {
-  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const fn = useServerFn(checkIsAdmin);
   const bootstrap = useServerFn(bootstrapAdmin);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -77,8 +76,11 @@ function AdminLayout() {
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
+    try {
+      await signOut("/");
+    } catch {
+      toast.error("Erro ao sair da conta.");
+    }
   };
 
   return (
