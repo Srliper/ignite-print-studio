@@ -1,49 +1,26 @@
-import { useCallback, useState } from "react";
-import { useRouteContext, useRouter } from "@tanstack/react-router";
-import type { AuthSession } from "start-authjs";
-import type { AuthUser } from "@/integrations/auth";
-import { AUTH_BASE_PATH } from "@/integrations/auth";
-import { fetchAuthSession } from "@/lib/auth-session";
-
-type AuthProvider = "google";
-
-type UseAuthReturn = {
-  user: AuthUser | null;
-  session: AuthSession | null;
-  isLoading: boolean;
-  error: string | null;
-  signIn: (provider: AuthProvider, callbackUrl?: string) => Promise<void>;
-  signOut: (callbackUrl?: string) => Promise<void>;
-  getSession: () => Promise<AuthSession | null>;
-  refreshSession: () => Promise<void>;
-};
-
-async function fetchCsrfToken(): Promise<string> {
+import { r as reactExports } from "../_libs/react.mjs";
+import { u as useRouter, d as useRouteContext } from "../_libs/tanstack__react-router.mjs";
+import { A as AUTH_BASE_PATH } from "./auth-BSY1hqz4.mjs";
+import { f as fetchAuthSession } from "./router-D6knOt8k.mjs";
+async function fetchCsrfToken() {
   const response = await fetch(`${AUTH_BASE_PATH}/csrf`, { credentials: "include" });
   if (!response.ok) {
     throw new Error("Não foi possível obter o token CSRF de autenticação.");
   }
-  const data = (await response.json()) as { csrfToken?: string };
+  const data = await response.json();
   if (!data.csrfToken) {
     throw new Error("Resposta CSRF inválida do servidor de autenticação.");
   }
   return data.csrfToken;
 }
-
-/**
- * Hook de autenticação Google OAuth via Auth.js.
- * A sessão vem do contexto do router (carregada no __root.tsx).
- */
-export function useAuth(): UseAuthReturn {
+function useAuth() {
   const router = useRouter();
   const context = useRouteContext({ from: "__root__" });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+  const [isLoading, setIsLoading] = reactExports.useState(false);
+  const [error, setError] = reactExports.useState(null);
   const session = context.session;
-  const user = (session?.user as AuthUser | undefined) ?? null;
-
-  const getSession = useCallback(async () => {
+  const user = session?.user ?? null;
+  const getSession = reactExports.useCallback(async () => {
     try {
       return await fetchAuthSession();
     } catch (err) {
@@ -51,32 +28,26 @@ export function useAuth(): UseAuthReturn {
       return null;
     }
   }, []);
-
-  const refreshSession = useCallback(async () => {
+  const refreshSession = reactExports.useCallback(async () => {
     await router.invalidate();
   }, [router]);
-
-  const signIn = useCallback(async (provider: AuthProvider, callbackUrl?: string) => {
+  const signIn = reactExports.useCallback(async (provider, callbackUrl) => {
     setIsLoading(true);
     setError(null);
-
     try {
       const csrfToken = await fetchCsrfToken();
       const destination = callbackUrl ?? `${window.location.origin}/`;
       const body = new URLSearchParams({
         csrfToken,
-        callbackUrl: destination,
+        callbackUrl: destination
       });
-
       const response = await fetch(`${AUTH_BASE_PATH}/signin/${provider}`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body,
         credentials: "include",
-        redirect: "manual",
+        redirect: "manual"
       });
-
-      // Auth.js responde com redirect para o Google
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("Location");
         if (location) {
@@ -84,40 +55,32 @@ export function useAuth(): UseAuthReturn {
           return;
         }
       }
-
       if (response.redirected && response.url) {
         window.location.href = response.url;
         return;
       }
-
-      // Fallback: redirect direto (GET)
       window.location.href = `${AUTH_BASE_PATH}/signin/${provider}?callbackUrl=${encodeURIComponent(destination)}`;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Falha ao iniciar login com Google.";
+      const message = err instanceof Error ? err.message : "Falha ao iniciar login com Google.";
       setError(message);
       throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
-
-  const signOut = useCallback(
-    async (callbackUrl?: string) => {
+  const signOut = reactExports.useCallback(
+    async (callbackUrl) => {
       setIsLoading(true);
       setError(null);
-
       try {
         const csrfToken = await fetchCsrfToken();
         const destination = callbackUrl ?? `${window.location.origin}/`;
-
         await fetch(`${AUTH_BASE_PATH}/signout`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({ csrfToken, callbackUrl: destination }),
-          credentials: "include",
+          credentials: "include"
         });
-
         await router.invalidate();
         window.location.href = destination;
       } catch (err) {
@@ -128,9 +91,8 @@ export function useAuth(): UseAuthReturn {
         setIsLoading(false);
       }
     },
-    [router],
+    [router]
   );
-
   return {
     user,
     session,
@@ -139,6 +101,9 @@ export function useAuth(): UseAuthReturn {
     signIn,
     signOut,
     getSession,
-    refreshSession,
+    refreshSession
   };
 }
+export {
+  useAuth as u
+};

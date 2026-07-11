@@ -19,6 +19,9 @@ declare module "@auth/core/types" {
   }
 }
 
+/** Path base do Auth.js — /oauth evita conflito com /api/* reservado pela Vercel */
+export const AUTH_BASE_PATH = "/oauth";
+
 /**
  * Lê variáveis de ambiente com fallback entre nomes comuns.
  * Suporta GOOGLE_CLIENT_ID/SECRET (solicitado) e AUTH_GOOGLE_ID/SECRET (Auth.js).
@@ -27,9 +30,9 @@ function normalizeAuthUrl(url?: string): string | undefined {
   if (!url) return undefined;
   try {
     const parsed = new URL(url);
-    // Auth.js exige AUTH_URL com o path completo: .../api/auth
-    if (parsed.pathname === "/" || !parsed.pathname.endsWith("/api/auth")) {
-      parsed.pathname = "/api/auth";
+    // Auth.js exige AUTH_URL com o path completo: .../oauth
+    if (parsed.pathname === "/" || !parsed.pathname.endsWith(AUTH_BASE_PATH)) {
+      parsed.pathname = AUTH_BASE_PATH;
     }
     return parsed.toString().replace(/\/$/, "");
   } catch {
@@ -135,7 +138,7 @@ export const authConfig: StartAuthJSConfig = {
 };
 
 /**
- * Handler de autenticação Auth.js — usado em src/routes/api/auth/$.ts
+ * Handler de autenticação Auth.js — usado em src/routes/oauth/$.ts
  */
 export { StartAuthJS } from "start-authjs";
 
@@ -144,31 +147,21 @@ export { StartAuthJS } from "start-authjs";
  * README — CONFIGURAÇÃO DO GOOGLE OAUTH E DEPLOY NA VERCEL
  * =============================================================================
  *
+ * IMPORTANTE: Usamos /oauth/* em vez de /api/auth/* porque a Vercel reserva
+ * o prefixo /api/ para funções serverless e retorna 404 nas rotas do Nitro.
+ *
  * CONFIGURAÇÃO NO GOOGLE CLOUD CONSOLE:
- * - Acesse https://console.cloud.google.com
- * - Crie um projeto (ou selecione um existente)
- * - Ative a API "Google Identity" / OAuth 2.0
- * - Vá em Credenciais → Criar credenciais → OAuth Client ID (Web Application)
  * - Origens JavaScript autorizadas:
  *     http://localhost:5173
  *     https://ignite-print-studio.vercel.app
  * - URIs de redirecionamento autorizados:
- *     http://localhost:5173/api/auth/callback/google
- *     https://ignite-print-studio.vercel.app/api/auth/callback/google
+ *     http://localhost:5173/oauth/callback/google
+ *     https://ignite-print-studio.vercel.app/oauth/callback/google
  *
  * CONFIGURAÇÃO NA VERCEL:
- * - Conecte o repositório GitHub na Vercel
- * - Adicione as Environment Variables (aceita AUTH_* ou NEXTAUTH_*):
  *     GOOGLE_CLIENT_ID
  *     GOOGLE_CLIENT_SECRET
  *     AUTH_SECRET  ou  NEXTAUTH_SECRET
- *     AUTH_URL     ou  NEXTAUTH_URL
- *       (produção: https://ignite-print-studio.vercel.app/api/auth)
- * - Faça deploy (build: npm run build)
- *
- * ROTAS:
- * - Pública:  /           (loja, sem login obrigatório)
- * - Login:    /auth       (página de autenticação)
- * - Protegida: /minha-conta, /admin/* (exige sessão Google OAuth)
+ *     AUTH_URL     ou  NEXTAUTH_URL  (= https://ignite-print-studio.vercel.app)
  * =============================================================================
  */
