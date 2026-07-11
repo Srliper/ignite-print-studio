@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LoginButton } from "@/components/LoginButton";
 import { useAuth } from "@/hooks/useAuth";
+import { fetchAuthSession } from "@/lib/auth-session";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -13,11 +14,16 @@ const authSearchSchema = z.object({
 
 export const Route = createFileRoute("/auth")({
   validateSearch: authSearchSchema,
-  beforeLoad: ({ context, search }) => {
-    // Redireciona se já estiver autenticado via Google OAuth
-    if (context.session?.user) {
-      const dest = search.callbackUrl?.startsWith("/") ? search.callbackUrl : "/";
-      throw redirect({ to: dest });
+  beforeLoad: async ({ search }) => {
+    try {
+      const session = await fetchAuthSession();
+      if (session?.user) {
+        const dest = search.callbackUrl?.startsWith("/") ? search.callbackUrl : "/";
+        throw redirect({ to: dest });
+      }
+    } catch (error) {
+      if (error && typeof error === "object" && "to" in error) throw error;
+      console.error("[auth] Erro ao verificar sessão:", error);
     }
   },
   head: () => ({

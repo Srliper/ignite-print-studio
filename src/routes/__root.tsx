@@ -12,7 +12,6 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { fetchAuthSession } from "@/lib/auth-session";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { Toaster } from "sonner";
 import { CartDrawer } from "@/components/CartDrawer";
@@ -81,16 +80,8 @@ export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
   session: AuthSession | null;
 }>()({
-  beforeLoad: async () => {
-    // Carrega sessão Auth.js — falha silenciosa se env vars ausentes na Vercel
-    try {
-      const session = await fetchAuthSession();
-      return { session };
-    } catch (error) {
-      console.error("[__root] Erro ao carregar sessão:", error);
-      return { session: null };
-    }
-  },
+  // Sessão carregada no cliente via AuthProvider (evita crash SSR na Vercel)
+  beforeLoad: () => ({ session: null }),
   head: () => ({
     meta: [
       { charSet: "utf-8" },

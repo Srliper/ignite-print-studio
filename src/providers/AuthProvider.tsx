@@ -1,12 +1,13 @@
-import { createContext, useContext, type ReactNode } from "react";
-import { useRouteContext, useRouter } from "@tanstack/react-router";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "@tanstack/react-router";
 import type { AuthSession } from "start-authjs";
 import type { AuthUser } from "@/integrations/auth";
+import { fetchAuthSession } from "@/lib/auth-session";
 
 type AuthContextValue = {
   session: AuthSession | null;
   user: AuthUser | null;
-  /** Invalida o router para recarregar a sessão do servidor */
+  isReady: boolean;
   refreshSession: () => Promise<void>;
 };
 
@@ -18,26 +19,49 @@ type AuthProviderProps = {
 
 /**
  * Provider de autenticação global.
- * A sessão é carregada no __root.tsx (beforeLoad) e repassada via contexto do router.
- * Este provider expõe sessão/usuário para qualquer componente filho.
+ * Carrega sessão no cliente para não derrubar o SSR na Vercel.
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
-  const { session } = useRouteContext({ from: "__root__" });
-  const user = (session?.user as AuthUser | undefined) ?? null;
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchAuthSession()
+      .then((s) => {
+        if (active) setSession(s);
+      })
+      .catch(() => {
+        if (active) setSession(null);
+      })
+      .finally(() => {
+        if (active) setIsReady(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const refreshSession = async () => {
+    try {
+      const s = await fetchAuthSession();
+      setSession(s);
+    } catch {
+      setSession(null);
+    }
     await router.invalidate();
   };
 
+  const user = (session?.user as AuthUser | undefined) ?? null;
+
   return (
-    <AuthContext.Provider value={{ session, user, refreshSession }}>
+    <AuthContext.Provider value={{ session, user, isReady, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-/** Hook interno do provider — prefira useAuth() para login/logout */
 export function useAuthContext(): AuthContextValue {
   const context = useContext(AuthContext);
   if (!context) {

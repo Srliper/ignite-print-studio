@@ -1180,9 +1180,8 @@ export {
   createRootRouteWithContext as a,
   createFileRoute as b,
   createRouter as c,
-  useRouteContext as d,
-  useNavigate as e,
-  useRouterState as f,
+  useNavigate as d,
+  useRouterState as e,
   lazyRouteComponent as l,
   renderRouterToStream as r,
   useRouter as u
