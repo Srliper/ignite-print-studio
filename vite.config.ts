@@ -11,23 +11,33 @@ import { loadEnv } from "vite";
 const mode = process.env.NODE_ENV === "production" ? "production" : "development";
 const env = loadEnv(mode, process.cwd(), "");
 
-// Valida variáveis críticas de auth em build de produção
+function hasEnv(...keys: string[]) {
+  return keys.some((key) => Boolean(env[key]?.trim()));
+}
+
+// Valida variáveis críticas em build de produção (Vercel injeta no build)
 if (mode === "production") {
-  const missing = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "AUTH_SECRET", "AUTH_URL"].filter(
-    (key) => !env[key],
-  );
+  const missing: string[] = [];
+  if (!hasEnv("GOOGLE_CLIENT_ID", "AUTH_GOOGLE_ID")) missing.push("GOOGLE_CLIENT_ID");
+  if (!hasEnv("GOOGLE_CLIENT_SECRET", "AUTH_GOOGLE_SECRET")) missing.push("GOOGLE_CLIENT_SECRET");
+  if (!hasEnv("AUTH_SECRET", "NEXTAUTH_SECRET")) missing.push("AUTH_SECRET ou NEXTAUTH_SECRET");
+  if (!hasEnv("AUTH_URL", "NEXTAUTH_URL", "VERCEL_URL")) missing.push("AUTH_URL / NEXTAUTH_URL");
+  if (!hasEnv("VITE_SUPABASE_URL", "SUPABASE_URL")) missing.push("VITE_SUPABASE_URL / SUPABASE_URL");
+  if (!hasEnv("VITE_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_PUBLISHABLE_KEY")) {
+    missing.push("VITE_SUPABASE_PUBLISHABLE_KEY / SUPABASE_PUBLISHABLE_KEY");
+  }
   if (missing.length > 0) {
     console.warn(
-      `[@lovable.dev/vite-tanstack-config] Variáveis de auth ausentes no build: ${missing.join(", ")}`,
+      `[@lovable.dev/vite-tanstack-config] Variáveis ausentes no build: ${missing.join(", ")}`,
     );
   }
 }
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
+    // Aviso CSRF é informativo — auth usa /oauth com CSRF próprio do Auth.js
+    serverFns: { disableCsrfMiddlewareWarning: true },
   },
   // Preset Vercel para deploy — Auth.js /api/auth/* roda como serverless function
   nitro: {

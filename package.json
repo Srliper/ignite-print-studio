@@ -9,7 +9,9 @@
     "build:dev": "node --use-system-ca ./node_modules/vite/bin/vite.js build --mode development",
     "preview": "node --use-system-ca ./node_modules/vite/bin/vite.js preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check:env": "node scripts/check-env.mjs",
+    "check:env:prod": "node scripts/check-env.mjs --production"
   },
   "dependencies": {
     "@auth/core": "^0.41.2",

@@ -226,7 +226,7 @@ const __iconNode = [
 ];
 const X = createLucideIcon("x", __iconNode);
 export {
-  ChevronLeft as C,
+  CircleCheck as C,
   DollarSign as D,
   LoaderCircle as L,
   Minus as M,
@@ -235,8 +235,8 @@ export {
   Trash2 as T,
   User as U,
   X,
-  Check as a,
-  CircleCheck as b,
+  ChevronLeft as a,
+  Check as b,
   LogOut as c,
   Shield as d,
   LayoutDashboard as e,

@@ -1,4 +1,4 @@
-import { a as createMiddleware, b as getRequest } from "./server-CMbdw2-U.mjs";
+import { a as createMiddleware, b as getRequest } from "./server-DnBW8DQC.mjs";
 import { c as createClient } from "../_libs/supabase__supabase-js.mjs";
 function isNewSupabaseApiKey(value) {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
