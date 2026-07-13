@@ -49,6 +49,9 @@ export default defineConfig({
   vite: {
     // TanStack Start atende /api/auth/* via server handlers (src/routes/api/auth/$.ts).
     // Não é necessário proxy em dev — as rotas Auth.js rodam no mesmo servidor Vite.
+    optimizeDeps: {
+      include: ["tslib", "@supabase/supabase-js"],
+    },
     ssr: {
       noExternal: ["tslib", "@supabase/supabase-js", /^@supabase\/.*/],
     },
