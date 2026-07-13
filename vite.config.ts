@@ -42,6 +42,10 @@ export default defineConfig({
   // Preset Vercel para deploy — Auth.js /api/auth/* roda como serverless function
   nitro: {
     preset: "vercel",
+    // Supabase auth-js importa tslib em runtime — inline evita ERR_MODULE_NOT_FOUND na Vercel
+    externals: {
+      inline: ["tslib"],
+    },
   },
   vite: {
     // TanStack Start atende /api/auth/* via server handlers (src/routes/api/auth/$.ts).
