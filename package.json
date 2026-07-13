@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --use-system-ca ./node_modules/vite/bin/vite.js dev",
-    "build": "node --use-system-ca ./node_modules/vite/bin/vite.js build",
+    "build": "node --use-system-ca ./node_modules/vite/bin/vite.js build && node scripts/verify-vercel-build.mjs",
     "build:dev": "node --use-system-ca ./node_modules/vite/bin/vite.js build --mode development",
     "preview": "node --use-system-ca ./node_modules/vite/bin/vite.js preview",
     "lint": "eslint .",
