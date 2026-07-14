@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import type { AuthSession } from "start-authjs";
+import type { Session } from "@supabase/supabase-js";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
@@ -78,9 +78,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
-  session: AuthSession | null;
+  session: Session | null;
 }>()({
-  // Sessão carregada no cliente via AuthProvider (evita crash SSR na Vercel)
+  // Sessão Supabase no cliente via AuthProvider (Lovable Google OAuth)
   beforeLoad: () => ({ session: null }),
   head: () => ({
     meta: [

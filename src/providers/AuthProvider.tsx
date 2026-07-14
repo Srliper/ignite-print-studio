@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "@tanstack/react-router";
-import type { AuthSession } from "start-authjs";
+import type { Session } from "@supabase/supabase-js";
 import type { AuthUser } from "@/integrations/auth";
-import { fetchAuthSession } from "@/lib/auth-session";
+import { mapSupabaseUser } from "@/integrations/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 type AuthContextValue = {
-  session: AuthSession | null;
+  session: Session | null;
   user: AuthUser | null;
   isReady: boolean;
   refreshSession: () => Promise<void>;
@@ -18,42 +19,41 @@ type AuthProviderProps = {
 };
 
 /**
- * Provider de autenticação global.
- * Carrega sessão no cliente para não derrubar o SSR na Vercel.
+ * Sessão global via Supabase (populado pelo Lovable Google OAuth).
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
-  const [session, setSession] = useState<AuthSession | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     let active = true;
-    fetchAuthSession()
-      .then((s) => {
-        if (active) setSession(s);
-      })
-      .catch(() => {
-        if (active) setSession(null);
-      })
-      .finally(() => {
-        if (active) setIsReady(true);
-      });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setSession(data.session);
+      setIsReady(true);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, next) => {
+      if (active) setSession(next);
+    });
+
     return () => {
       active = false;
+      subscription.unsubscribe();
     };
   }, []);
 
   const refreshSession = async () => {
-    try {
-      const s = await fetchAuthSession();
-      setSession(s);
-    } catch {
-      setSession(null);
-    }
+    const { data } = await supabase.auth.getSession();
+    setSession(data.session);
     await router.invalidate();
   };
 
-  const user = (session?.user as AuthUser | undefined) ?? null;
+  const user = session?.user ? mapSupabaseUser(session.user) : null;
 
   return (
     <AuthContext.Provider value={{ session, user, isReady, refreshSession }}>

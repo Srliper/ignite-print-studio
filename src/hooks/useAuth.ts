@@ -1,88 +1,64 @@
 import { useCallback, useState } from "react";
-import { useRouter } from "@tanstack/react-router";
-import type { AuthSession } from "start-authjs";
-import { AUTH_BASE_PATH } from "@/integrations/auth";
+import type { Session } from "@supabase/supabase-js";
+import { lovable } from "@/integrations/lovable";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/providers/AuthProvider";
-import { fetchAuthSession } from "@/lib/auth-session";
 
 type AuthProvider = "google";
 
 type UseAuthReturn = {
   user: ReturnType<typeof useAuthContext>["user"];
-  session: AuthSession | null;
+  session: Session | null;
   isLoading: boolean;
   isReady: boolean;
   error: string | null;
   signIn: (provider: AuthProvider, callbackUrl?: string) => Promise<void>;
   signOut: (callbackUrl?: string) => Promise<void>;
-  getSession: () => Promise<AuthSession | null>;
+  getSession: () => Promise<Session | null>;
   refreshSession: () => Promise<void>;
 };
 
-async function fetchCsrfToken(): Promise<string> {
-  const response = await fetch(`${AUTH_BASE_PATH}/csrf`, { credentials: "include" });
-  if (!response.ok) {
-    throw new Error("Não foi possível obter o token CSRF de autenticação.");
-  }
-  const data = (await response.json()) as { csrfToken?: string };
-  if (!data.csrfToken) {
-    throw new Error("Resposta CSRF inválida do servidor de autenticação.");
-  }
-  return data.csrfToken;
-}
-
 /**
- * Hook de autenticação Google OAuth via Auth.js.
+ * Login Google via Lovable Cloud Auth + sessão Supabase.
  */
 export function useAuth(): UseAuthReturn {
-  const router = useRouter();
   const { session, user, isReady, refreshSession } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const getSession = useCallback(async () => {
-    try {
-      return await fetchAuthSession();
-    } catch (err) {
-      console.error("[useAuth] Erro ao buscar sessão:", err);
-      return null;
-    }
+    const { data } = await supabase.auth.getSession();
+    return data.session;
   }, []);
 
-  const signIn = useCallback(async (provider: AuthProvider, callbackUrl?: string) => {
+  const signIn = useCallback(async (_provider: AuthProvider, callbackUrl?: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const csrfToken = await fetchCsrfToken();
-      const destination = callbackUrl ?? `${window.location.origin}/`;
-      const body = new URLSearchParams({
-        csrfToken,
-        callbackUrl: destination,
+      const redirectUri =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : undefined;
+
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: redirectUri,
+        extraParams: callbackUrl?.startsWith("/")
+          ? { callbackUrl }
+          : undefined,
       });
 
-      const response = await fetch(`${AUTH_BASE_PATH}/signin/${provider}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-        credentials: "include",
-        redirect: "manual",
-      });
+      if (result.redirected) return;
 
-      if (response.status >= 300 && response.status < 400) {
-        const location = response.headers.get("Location");
-        if (location) {
-          window.location.href = location;
-          return;
-        }
+      if (result.error) {
+        setError(result.error.message);
+        throw result.error;
       }
 
-      if (response.redirected && response.url) {
-        window.location.href = response.url;
-        return;
-      }
-
-      window.location.href = `${AUTH_BASE_PATH}/signin/${provider}?callbackUrl=${encodeURIComponent(destination)}`;
+      await refreshSession();
+      const dest =
+        callbackUrl?.startsWith("/") ? callbackUrl : `${window.location.origin}/`;
+      window.location.href = dest.startsWith("http") ? dest : `${window.location.origin}${dest}`;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Falha ao iniciar login com Google.";
@@ -91,7 +67,7 @@ export function useAuth(): UseAuthReturn {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [refreshSession]);
 
   const signOut = useCallback(
     async (callbackUrl?: string) => {
@@ -99,18 +75,9 @@ export function useAuth(): UseAuthReturn {
       setError(null);
 
       try {
-        const csrfToken = await fetchCsrfToken();
-        const destination = callbackUrl ?? `${window.location.origin}/`;
-
-        await fetch(`${AUTH_BASE_PATH}/signout`, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ csrfToken, callbackUrl: destination }),
-          credentials: "include",
-        });
-
+        await supabase.auth.signOut();
         await refreshSession();
-        window.location.href = destination;
+        window.location.href = callbackUrl ?? "/";
       } catch (err) {
         const message = err instanceof Error ? err.message : "Falha ao encerrar sessão.";
         setError(message);

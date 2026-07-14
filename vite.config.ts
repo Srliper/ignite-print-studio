@@ -7,7 +7,6 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { loadEnv } from "vite";
 
-// Carrega variáveis de ambiente da raiz do projeto (dev e build)
 const mode = process.env.NODE_ENV === "production" ? "production" : "development";
 const env = loadEnv(mode, process.cwd(), "");
 
@@ -15,13 +14,9 @@ function hasEnv(...keys: string[]) {
   return keys.some((key) => Boolean(env[key]?.trim()));
 }
 
-// Valida variáveis críticas em build de produção (Vercel injeta no build)
+// Login Google = Lovable Cloud Auth (sem AUTH_SECRET). Supabase ainda é obrigatório.
 if (mode === "production") {
   const missing: string[] = [];
-  if (!hasEnv("GOOGLE_CLIENT_ID", "AUTH_GOOGLE_ID")) missing.push("GOOGLE_CLIENT_ID");
-  if (!hasEnv("GOOGLE_CLIENT_SECRET", "AUTH_GOOGLE_SECRET")) missing.push("GOOGLE_CLIENT_SECRET");
-  if (!hasEnv("AUTH_SECRET", "NEXTAUTH_SECRET")) missing.push("AUTH_SECRET ou NEXTAUTH_SECRET");
-  if (!hasEnv("AUTH_URL", "NEXTAUTH_URL", "VERCEL_URL")) missing.push("AUTH_URL / NEXTAUTH_URL");
   if (!hasEnv("VITE_SUPABASE_URL", "SUPABASE_URL")) missing.push("VITE_SUPABASE_URL / SUPABASE_URL");
   if (!hasEnv("VITE_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_PUBLISHABLE_KEY")) {
     missing.push("VITE_SUPABASE_PUBLISHABLE_KEY / SUPABASE_PUBLISHABLE_KEY");
@@ -36,26 +31,21 @@ if (mode === "production") {
 export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
-    // Aviso CSRF é informativo — auth usa /oauth com CSRF próprio do Auth.js
     serverFns: { disableCsrfMiddlewareWarning: true },
   },
-  // Preset Vercel para deploy — Auth.js /api/auth/* roda como serverless function
   nitro: {
     preset: "vercel",
-    // Nitro 3: bundla tslib dentro dos chunks (evita ERR_MODULE_NOT_FOUND na Vercel)
     noExternals: ["tslib", /^@supabase\//],
     traceDeps: ["tslib", "@supabase/*"],
   },
   vite: {
-    // TanStack Start atende /api/auth/* via server handlers (src/routes/api/auth/$.ts).
-    // Não é necessário proxy em dev — as rotas Auth.js rodam no mesmo servidor Vite.
     optimizeDeps: {
       include: ["tslib", "@supabase/supabase-js"],
     },
     ssr: {
       noExternal: ["tslib", "@supabase/supabase-js", /^@supabase\/.*/],
     },
-    envPrefix: ["VITE_", "AUTH_", "GOOGLE_"],
+    envPrefix: ["VITE_"],
     base: "/",
     build: {
       outDir: "dist",

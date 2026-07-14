@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LoginButton } from "@/components/LoginButton";
 import { useAuth } from "@/hooks/useAuth";
-import { fetchAuthSession } from "@/lib/auth-session";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -13,10 +12,13 @@ const authSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   validateSearch: authSearchSchema,
   beforeLoad: async ({ search }) => {
     try {
-      const session = await fetchAuthSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session?.user) {
         const dest = search.callbackUrl?.startsWith("/") ? search.callbackUrl : "/";
         throw redirect({ to: dest });
@@ -55,16 +57,11 @@ function AuthPage() {
 
   useEffect(() => {
     if (authError) {
-      const messages: Record<string, string> = {
-        OAuthSignin: "Erro ao iniciar login com Google. Verifique as credenciais OAuth.",
-        OAuthCallback: "Erro no retorno do Google. Verifique o Redirect URI no Google Console.",
-        OAuthCreateAccount: "Não foi possível criar a conta.",
-        Callback: "Erro no callback de autenticação.",
-        AccessDenied: "Acesso negado. Você cancelou o login ou não tem permissão.",
-        Configuration: "Erro de configuração do servidor (AUTH_SECRET ou credenciais Google).",
-        Default: "Erro na autenticação Google. Tente novamente.",
-      };
-      toast.error(messages[authError] ?? messages.Default);
+      toast.error(
+        authError === "AccessDenied"
+          ? "Acesso negado. Você cancelou o login ou não tem permissão."
+          : "Erro na autenticação Google. Ative Google em Lovable → Cloud → Auth.",
+      );
     }
   }, [authError]);
 

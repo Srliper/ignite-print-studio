@@ -1,13 +1,10 @@
 #!/usr/bin/env node
 /**
- * Valida variáveis de ambiente antes de dev/build/deploy.
- * Uso: node scripts/check-env.mjs [--production]
+ * Valida variáveis de ambiente (login Google = Lovable Cloud Auth).
+ * Uso: node scripts/check-env.mjs
  */
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { randomBytes } from "node:crypto";
-
-const isProd = process.argv.includes("--production");
 
 function loadDotEnv() {
   const path = resolve(process.cwd(), ".env");
@@ -25,49 +22,33 @@ function loadDotEnv() {
 
 loadDotEnv();
 
-function get(name, ...aliases) {
-  for (const key of [name, ...aliases]) {
+function get(...keys) {
+  for (const key of keys) {
     const v = process.env[key];
-    if (v && !v.startsWith("COLE_") && !v.startsWith("seu_") && !v.startsWith("gere_")) return v;
+    if (v && !v.startsWith("COLE_") && !v.startsWith("sua_")) return v;
   }
   return undefined;
 }
 
 const required = [
-  { keys: ["SUPABASE_URL"], label: "SUPABASE_URL" },
-  { keys: ["SUPABASE_PUBLISHABLE_KEY"], label: "SUPABASE_PUBLISHABLE_KEY" },
-  { keys: ["VITE_SUPABASE_URL"], label: "VITE_SUPABASE_URL" },
-  { keys: ["VITE_SUPABASE_PUBLISHABLE_KEY"], label: "VITE_SUPABASE_PUBLISHABLE_KEY" },
-  { keys: ["GOOGLE_CLIENT_ID", "AUTH_GOOGLE_ID"], label: "GOOGLE_CLIENT_ID" },
-  { keys: ["GOOGLE_CLIENT_SECRET", "AUTH_GOOGLE_SECRET"], label: "GOOGLE_CLIENT_SECRET" },
-  { keys: ["AUTH_SECRET", "NEXTAUTH_SECRET"], label: "AUTH_SECRET ou NEXTAUTH_SECRET" },
-];
-
-const prodOnly = [
-  { keys: ["AUTH_URL", "NEXTAUTH_URL", "VERCEL_URL"], label: "AUTH_URL / NEXTAUTH_URL / VERCEL_URL" },
+  { keys: ["SUPABASE_URL", "VITE_SUPABASE_URL"], label: "SUPABASE_URL / VITE_SUPABASE_URL" },
+  {
+    keys: ["SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY"],
+    label: "SUPABASE_PUBLISHABLE_KEY / VITE_SUPABASE_*",
+  },
 ];
 
 const missing = required.filter(({ keys }) => !get(...keys));
-if (isProd) {
-  missing.push(...prodOnly.filter(({ keys }) => !get(...keys)));
-}
 
 console.log("\n=== ignite-print-studio — check-env ===\n");
+console.log("Login Google: Lovable Cloud → Users → Auth → Google\n");
 
 if (missing.length === 0) {
-  console.log("✓ Todas as variáveis obrigatórias estão definidas.\n");
+  console.log("✓ Variáveis Supabase OK.\n");
   process.exit(0);
 }
 
-console.log("✗ Variáveis ausentes ou com placeholder:\n");
-for (const { label } of missing) {
-  console.log(`  - ${label}`);
-}
-
-console.log("\nGere AUTH_SECRET com:");
-console.log(
-  '  node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
-);
-console.log("\nExemplo gerado agora:", randomBytes(32).toString("base64"));
-console.log("\nVercel: Settings → Environment Variables → marque Production + Preview\n");
+console.log("✗ Ausentes:\n");
+for (const { label } of missing) console.log(`  - ${label}`);
+console.log("");
 process.exit(1);

@@ -1,12 +1,9 @@
 /**
  * Ponto de entrada do cliente (TanStack Start).
  *
- * TanStack Start usa StartClient internamente — não há bootstrap manual aqui.
- * A configuração global de autenticação é feita em:
- *   - src/routes/__root.tsx  → carrega sessão Auth.js no beforeLoad + AuthProvider
- *   - src/start.ts           → middleware de servidor
- *   - src/routes/api/auth/$.ts → endpoints OAuth (/api/auth/*)
- *
- * Este arquivo documenta a arquitetura e exporta o provider para referência.
+ * Autenticação:
+ *   - src/integrations/lovable/index.ts → Google OAuth (Lovable Cloud Auth)
+ *   - src/providers/AuthProvider.tsx    → sessão Supabase no cliente
+ *   - src/hooks/useAuth.ts              → signIn / signOut
  */
 export { AuthProvider } from "@/providers/AuthProvider";

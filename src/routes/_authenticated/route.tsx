@@ -1,16 +1,14 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import type { AuthUser } from "@/integrations/auth";
-import { fetchAuthSession } from "@/lib/auth-session";
+import { mapSupabaseUser } from "@/integrations/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
-    let session = null;
-    try {
-      session = await fetchAuthSession();
-    } catch (error) {
-      console.error("[auth] Erro ao verificar sessão:", error);
-    }
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session?.user) {
       throw redirect({
@@ -19,7 +17,7 @@ export const Route = createFileRoute("/_authenticated")({
       });
     }
 
-    return { user: session.user as AuthUser };
+    return { user: mapSupabaseUser(session.user) as AuthUser };
   },
   component: () => <Outlet />,
 });

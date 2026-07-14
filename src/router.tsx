@@ -1,11 +1,11 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
-import type { AuthSession } from "start-authjs";
+import type { Session } from "@supabase/supabase-js";
 import { routeTree } from "./routeTree.gen";
 
 export type RouterContext = {
   queryClient: QueryClient;
-  session: AuthSession | null;
+  session: Session | null;
 };
 
 export const getRouter = () => {

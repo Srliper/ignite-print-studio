@@ -13,7 +13,6 @@ import { Route as PedidoConfirmadoRouteImport } from './routes/pedido-confirmado
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as OauthSplatRouteImport } from './routes/oauth/$'
 import { Route as AuthenticatedMinhaContaRouteImport } from './routes/_authenticated/minha-conta'
 import { Route as AuthenticatedMeusPedidosRouteImport } from './routes/_authenticated/meus-pedidos'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
@@ -41,11 +40,6 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OauthSplatRoute = OauthSplatRouteImport.update({
-  id: '/oauth/$',
-  path: '/oauth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMinhaContaRoute = AuthenticatedMinhaContaRouteImport.update({
@@ -107,7 +101,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
   '/minha-conta': typeof AuthenticatedMinhaContaRoute
-  '/oauth/$': typeof OauthSplatRoute
   '/admin/clientes': typeof AuthenticatedAdminClientesRoute
   '/admin/comissao': typeof AuthenticatedAdminComissaoRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
@@ -121,7 +114,6 @@ export interface FileRoutesByTo {
   '/pedido-confirmado': typeof PedidoConfirmadoRoute
   '/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
   '/minha-conta': typeof AuthenticatedMinhaContaRoute
-  '/oauth/$': typeof OauthSplatRoute
   '/admin/clientes': typeof AuthenticatedAdminClientesRoute
   '/admin/comissao': typeof AuthenticatedAdminComissaoRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
@@ -138,7 +130,6 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/meus-pedidos': typeof AuthenticatedMeusPedidosRoute
   '/_authenticated/minha-conta': typeof AuthenticatedMinhaContaRoute
-  '/oauth/$': typeof OauthSplatRoute
   '/_authenticated/admin/clientes': typeof AuthenticatedAdminClientesRoute
   '/_authenticated/admin/comissao': typeof AuthenticatedAdminComissaoRoute
   '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
@@ -155,7 +146,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/meus-pedidos'
     | '/minha-conta'
-    | '/oauth/$'
     | '/admin/clientes'
     | '/admin/comissao'
     | '/admin/equipe'
@@ -169,7 +159,6 @@ export interface FileRouteTypes {
     | '/pedido-confirmado'
     | '/meus-pedidos'
     | '/minha-conta'
-    | '/oauth/$'
     | '/admin/clientes'
     | '/admin/comissao'
     | '/admin/equipe'
@@ -185,7 +174,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/meus-pedidos'
     | '/_authenticated/minha-conta'
-    | '/oauth/$'
     | '/_authenticated/admin/clientes'
     | '/_authenticated/admin/comissao'
     | '/_authenticated/admin/equipe'
@@ -199,7 +187,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PedidoConfirmadoRoute: typeof PedidoConfirmadoRoute
-  OauthSplatRoute: typeof OauthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -230,13 +217,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/oauth/$': {
-      id: '/oauth/$'
-      path: '/oauth/$'
-      fullPath: '/oauth/$'
-      preLoaderRoute: typeof OauthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/minha-conta': {
@@ -349,7 +329,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PedidoConfirmadoRoute: PedidoConfirmadoRoute,
-  OauthSplatRoute: OauthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

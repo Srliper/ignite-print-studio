@@ -35,7 +35,7 @@ function GoogleIcon() {
 }
 
 /**
- * Botão de login com Google via Auth.js.
+ * Botão de login com Google via Lovable Cloud Auth → Supabase.
  * Quando logado, exibe nome do usuário e botão de sair (se showLoggedInState=true).
  */
 export function LoginButton({

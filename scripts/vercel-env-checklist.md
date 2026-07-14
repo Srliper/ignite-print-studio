@@ -1,44 +1,29 @@
-# Checklist de variáveis — Vercel (Production + Preview)
+# Vercel + Lovable Google Auth
 
-**Vercel → Project → Settings → Environment Variables**
+Repo: `https://github.com/Srliper/ignite-print-studio.git` (mesmo repo)
 
-Marque **Production** e **Preview** em todas as 8 variáveis abaixo.
+## Vercel Environment Variables (Production + Preview)
 
 | Variável | Valor |
 |----------|-------|
-| `SUPABASE_URL` | `https://hhvzklzxtpaieqdxkymq.supabase.co` |
-| `SUPABASE_PUBLISHABLE_KEY` | chave anon do Supabase |
-| `VITE_SUPABASE_URL` | `https://hhvzklzxtpaieqdxkymq.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | mesma chave anon |
-| `GOOGLE_CLIENT_ID` | Client ID do Google Console |
-| `GOOGLE_CLIENT_SECRET` | Client Secret do Google Console |
-| `NEXTAUTH_SECRET` | mesmo valor de `AUTH_SECRET` local |
-| `NEXTAUTH_URL` | `https://ignite-print-studio.vercel.app` |
+| `SUPABASE_URL` | URL do projeto Supabase |
+| `SUPABASE_PUBLISHABLE_KEY` | chave anon |
+| `VITE_SUPABASE_URL` | mesma URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | mesma chave |
 
-> O código também aceita `AUTH_SECRET` e `AUTH_URL` no lugar de `NEXTAUTH_*`.
+**Não precisa mais:** `AUTH_SECRET`, `NEXTAUTH_*`, `GOOGLE_CLIENT_*` na Vercel.
 
-## Google Cloud Console
+## Lovable — Google login
 
-**Authorized redirect URIs:**
-- `http://localhost:5173/oauth/callback/google`
-- `https://ignite-print-studio.vercel.app/oauth/callback/google`
+1. Lovable → **Cloud → Users → Auth → Google**
+2. **Your own credentials** → cole Client ID + Secret do Google Console  
+   ou use **Managed by Lovable**
+3. Redirect URIs (Google Console / lista do Lovable):
+   - `https://ignite-print-studio.vercel.app`
+   - `http://localhost:5173`
 
-**Authorized JavaScript origins:**
-- `http://localhost:5173`
-- `https://ignite-print-studio.vercel.app`
+## Deploy
 
-## Após salvar as variáveis
-
-1. **Deployments → Redeploy** do commit mais recente (`main`)
-2. Não use "Redeploy" de deploy antigo — faça push novo ou redeploy do último commit
-
-## Teste
-
-```bash
-npm run check:env:prod   # local, simula produção
-```
-
-URLs:
-1. `https://ignite-print-studio.vercel.app/` → 200, loja carrega
-2. `https://ignite-print-studio.vercel.app/oauth/csrf` → `{"csrfToken":"..."}`
-3. `/auth` → "Entrar com Google" redireciona para Google
+1. Push em `main` (não redeploy de commit antigo)
+2. Aguarde **Ready** (build deve rodar `npm run build`, **sem** prebuilt `.vercel/output`)
+3. Teste `/` e `/auth` → Entrar com Google
